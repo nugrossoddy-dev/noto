@@ -1,0 +1,558 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>NOTO — Get Things Done</title>
+<link rel="manifest" href="data:application/manifest+json,{}">
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+<style>
+:root{
+  --bg:#FAF9F6; --surface:#FFFFFF; --ink:#20241F; --ink-soft:#5B6159;
+  --line:#E7E4DC; --accent:#5B7F63; --accent-soft:#EAF0EA; --accent-ink:#3E5A44;
+  --radius:14px; --shadow:0 1px 2px rgba(32,36,31,.05);
+}
+*{box-sizing:border-box}
+html,body{height:100%}
+body{background:var(--bg);color:var(--ink);font-family:'Inter',sans-serif;font-weight:400;
+  padding-top:env(safe-area-inset-top,0);padding-bottom:env(safe-area-inset-bottom,0);}
+h1,h2,h3,h4,.brand{font-weight:700;letter-spacing:-.02em}
+.text-muted2{color:var(--ink-soft)}
+.btn-accent{background:var(--accent);border:none;color:#fff;border-radius:10px;font-weight:600;padding:.6rem 1.3rem}
+.btn-accent:hover{background:var(--accent-ink);color:#fff}
+.btn-ghost{background:transparent;border:1px solid var(--line);color:var(--ink);border-radius:10px;font-weight:600}
+.btn-ghost:hover{background:var(--accent-soft);border-color:var(--accent)}
+.card-noto{background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);box-shadow:var(--shadow)}
+.chip{display:inline-block;padding:.25rem .65rem;border-radius:20px;font-size:.78rem;font-weight:600}
+.chip-low{background:var(--accent-soft);color:var(--accent-ink)}
+.chip-med{background:#FFF3DE;color:#8A5A17}
+.chip-high{background:#FBE7E5;color:#A13A32}
+/* ---------- Landing ---------- */
+#landing{min-height:100vh}
+.landing-nav{padding:1.1rem 1.5rem;display:flex;justify-content:space-between;align-items:center}
+.hero{padding:5rem 1.5rem 4rem;text-align:center;max-width:640px;margin:0 auto}
+.hero h1{font-size:clamp(2.3rem,6vw,3.4rem);line-height:1.05}
+.hero p{font-size:1.15rem;color:var(--ink-soft);margin-top:1rem}
+.feature-row{max-width:920px;margin:0 auto;padding:2rem 1.5rem 5rem}
+.feature-item{padding:1.4rem;border-top:1px solid var(--line)}
+.feature-item h3{font-size:1.05rem;margin-bottom:.3rem}
+.feature-item p{color:var(--ink-soft);font-size:.92rem;margin:0}
+footer.site{border-top:1px solid var(--line);padding:2rem 1.5rem;text-align:center;color:var(--ink-soft);font-size:.88rem}
+/* ---------- App shell ---------- */
+#app{display:none;min-height:100vh}
+.sidebar{width:220px;background:var(--surface);border-right:1px solid var(--line);height:100vh;position:fixed;top:0;left:0;padding:1.3rem 1rem;display:flex;flex-direction:column}
+.sidebar .brand{padding:.4rem .6rem 1.4rem}
+.nav-item{display:flex;align-items:center;gap:.6rem;padding:.6rem .8rem;border-radius:10px;color:var(--ink-soft);
+  font-weight:600;font-size:.92rem;cursor:pointer;margin-bottom:.15rem}
+.nav-item:hover{background:var(--accent-soft)}
+.nav-item.active{background:var(--accent-soft);color:var(--accent-ink)}
+.main-area{margin-left:220px;padding:1.8rem 2.2rem 3rem;max-width:900px}
+.view{display:none}
+.view.active{display:block}
+.page-title{font-size:1.5rem;margin-bottom:.2rem}
+.toast-noto{position:fixed;bottom:24px;left:50%;transform:translateX(-50%);background:var(--ink);color:#fff;
+  padding:.6rem 1.1rem;border-radius:10px;font-size:.88rem;z-index:2000;opacity:0;transition:opacity .25s}
+.toast-noto.show{opacity:1}
+.task-row{display:flex;align-items:center;gap:.8rem;padding:.75rem .3rem;border-bottom:1px solid var(--line)}
+.task-row:last-child{border-bottom:none}
+.task-check{width:22px;height:22px;border-radius:50%;border:2px solid var(--line);flex:none;cursor:pointer;display:flex;align-items:center;justify-content:center}
+.task-check.done{background:var(--accent);border-color:var(--accent);color:#fff}
+.task-title.done{text-decoration:line-through;color:var(--ink-soft)}
+.insight-card{background:var(--accent-soft);border-radius:12px;padding:1rem 1.2rem;color:var(--accent-ink);font-weight:500;font-size:.92rem}
+.empty-state{text-align:center;color:var(--ink-soft);padding:2.5rem 1rem}
+/* focus mode */
+#focusOverlay{position:fixed;inset:0;background:var(--bg);z-index:1500;display:none;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:2rem}
+.timer-display{font-size:clamp(3.5rem,14vw,6rem);font-weight:800;letter-spacing:-.02em}
+/* mobile bottom nav */
+.bottom-nav{display:none}
+@media (max-width:860px){
+  .sidebar{display:none}
+  .main-area{margin-left:0;padding:1.3rem 1rem 5.5rem}
+  .bottom-nav{display:flex;position:fixed;bottom:0;left:0;right:0;background:var(--surface);
+    border-top:1px solid var(--line);z-index:1000;padding-bottom:env(safe-area-inset-bottom,0)}
+  .bottom-nav .nav-item{flex:1;flex-direction:column;text-align:center;border-radius:0;font-size:.72rem;gap:.15rem}
+}
+@media (prefers-color-scheme:dark){
+  :root:not([data-theme="light"]){--bg:#181A17;--surface:#20231F;--ink:#EDEFEA;--ink-soft:#9CA39A;
+    --line:#31352E;--accent:#7FAF8B;--accent-soft:#26302A;--accent-ink:#B7D8BE;}
+}
+</style>
+</head>
+<body>
+
+<!-- ================= LANDING ================= -->
+<div id="landing">
+  <div class="landing-nav">
+    <span class="brand">noto</span>
+    <div>
+      <button class="btn btn-accent btn-sm" onclick="enterApp()">Start Organizing</button>
+    </div>
+  </div>
+  <div class="hero">
+    <h1>Get Things Done</h1>
+    <p>One calm space for your tasks, focus, and thoughts.</p>
+    <div class="d-flex gap-2 justify-content-center mt-4 flex-wrap">
+      <button class="btn btn-accent" onclick="enterApp()">Start Organizing</button>
+      <a class="btn btn-ghost" id="waLanding" href="#" target="_blank">Contact Me</a>
+    </div>
+  </div>
+  <div class="feature-row row g-0">
+    <div class="col-md-4 feature-item">
+      <h3>Time Management</h3>
+      <p>Task dan jadwal sederhana, lengkap dengan prioritas dan pengingat ringan.</p>
+    </div>
+    <div class="col-md-4 feature-item">
+      <h3>Focus Mode</h3>
+      <p>Timer deep work bebas distraksi — 25/5, 50/10, atau custom.</p>
+    </div>
+    <div class="col-md-4 feature-item">
+      <h3>Reference Hub</h3>
+      <p>Micro notes untuk ide dan referensi, tanpa editor yang rumit.</p>
+    </div>
+  </div>
+  <footer class="site">
+    noto — a calm productivity companion ·
+    <a href="#" id="waFooter" target="_blank" class="text-decoration-none" style="color:var(--accent-ink);font-weight:600">Let's Talk</a>
+  </footer>
+</div>
+
+<!-- ================= APP ================= -->
+<div id="app">
+  <div class="sidebar">
+    <div class="brand">noto</div>
+    <div class="nav-item active" data-view="dashboard" onclick="showView('dashboard')">⌂ Home</div>
+    <div class="nav-item" data-view="tasks" onclick="showView('tasks')">☑ Tasks</div>
+    <div class="nav-item" data-view="focus" onclick="showView('focus')">◷ Focus</div>
+    <div class="nav-item" data-view="notes" onclick="showView('notes')">✎ Notes</div>
+    <div class="nav-item" data-view="profile" onclick="showView('profile')">◐ Profile</div>
+    <div class="mt-auto">
+      <a class="nav-item" id="waSidebar" href="#" target="_blank">💬 Contact Me</a>
+    </div>
+  </div>
+
+  <div class="main-area">
+
+    <!-- DASHBOARD -->
+    <div class="view active" id="view-dashboard">
+      <div class="d-flex justify-content-between align-items-start mb-3">
+        <div>
+          <div class="page-title" id="greeting">Hi there</div>
+          <div class="text-muted2" id="todayDate"></div>
+        </div>
+        <button class="btn btn-accent btn-sm" onclick="openQuickAdd()">+ Quick Add</button>
+      </div>
+
+      <div class="insight-card mb-3" id="dashInsight">Let's set your first task today.</div>
+
+      <div class="card-noto p-3 mb-3">
+        <h4 class="mb-2" style="font-size:1rem">What should I do next?</h4>
+        <div id="nextTaskBox" class="text-muted2">No pending tasks — add one to get started.</div>
+      </div>
+
+      <div class="row g-3">
+        <div class="col-md-6">
+          <div class="card-noto p-3">
+            <h4 style="font-size:.95rem" class="mb-2">Today's tasks</h4>
+            <div id="todayTasksList"></div>
+          </div>
+        </div>
+        <div class="col-md-6">
+          <div class="card-noto p-3">
+            <h4 style="font-size:.95rem" class="mb-2">How are you feeling?</h4>
+            <div class="mb-2">
+              <label class="form-label small text-muted2 mb-1">Mood</label>
+              <div id="moodPicker" class="d-flex gap-2"></div>
+            </div>
+            <label class="form-label small text-muted2 mb-1">Energy</label>
+            <input type="range" min="1" max="5" value="3" class="form-range" id="energyRange">
+            <label class="form-label small text-muted2 mb-1 mt-2">Stress</label>
+            <input type="range" min="1" max="5" value="3" class="form-range" id="stressRange">
+            <button class="btn btn-ghost btn-sm mt-2 w-100" onclick="logState()">Save today's state</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="card-noto p-3 mt-3 d-flex justify-content-between align-items-center">
+        <div><strong id="streakCount">0</strong> <span class="text-muted2">day streak · </span><strong id="pointsCount">0</strong> <span class="text-muted2">points</span></div>
+        <span class="text-muted2 small" id="sessionCount">0 focus sessions</span>
+      </div>
+    </div>
+
+    <!-- TASKS -->
+    <div class="view" id="view-tasks">
+      <div class="d-flex justify-content-between align-items-center mb-3">
+        <div class="page-title">Tasks</div>
+        <button class="btn btn-accent btn-sm" onclick="openQuickAdd()">+ Quick Add</button>
+      </div>
+      <div class="card-noto p-3">
+        <div id="allTasksList"></div>
+        <div class="empty-state" id="tasksEmpty" style="display:none">No tasks yet. Add your first task above.</div>
+      </div>
+    </div>
+
+    <!-- FOCUS -->
+    <div class="view" id="view-focus">
+      <div class="page-title mb-3">Focus Mode</div>
+      <div class="card-noto p-4">
+        <label class="form-label small text-muted2">Working on</label>
+        <select class="form-select mb-3" id="focusTaskSelect"><option value="">General focus session</option></select>
+        <label class="form-label small text-muted2">Mode</label>
+        <div class="d-flex gap-2 mb-3 flex-wrap" id="modePicker">
+          <button class="btn btn-ghost btn-sm" data-min="25" onclick="pickMode(25,this)">25 / 5</button>
+          <button class="btn btn-ghost btn-sm" data-min="50" onclick="pickMode(50,this)">50 / 10</button>
+          <button class="btn btn-ghost btn-sm" data-min="15" onclick="pickMode(15,this)">Custom 15</button>
+        </div>
+        <button class="btn btn-accent" onclick="startFocus()">Start Session</button>
+      </div>
+    </div>
+
+    <!-- NOTES -->
+    <div class="view" id="view-notes">
+      <div class="d-flex justify-content-between align-items-center mb-3">
+        <div class="page-title">Notes</div>
+      </div>
+      <div class="card-noto p-3 mb-3">
+        <input class="form-control mb-2" id="noteSearch" placeholder="Search notes..." oninput="renderNotes()">
+        <textarea class="form-control mb-2" id="noteInput" rows="2" placeholder="Write a quick note..."></textarea>
+        <div class="d-flex gap-2">
+          <input class="form-control form-control-sm" id="noteTag" placeholder="tag (optional)" style="max-width:160px">
+          <button class="btn btn-accent btn-sm" onclick="addNote()">Save Note</button>
+        </div>
+      </div>
+      <div id="notesList" class="row g-2"></div>
+      <div class="empty-state" id="notesEmpty" style="display:none">No notes yet. Capture your first idea above.</div>
+    </div>
+
+    <!-- PROFILE -->
+    <div class="view" id="view-profile">
+      <div class="page-title mb-3">Profile & Insights</div>
+      <div class="card-noto p-3 mb-3">
+        <h4 style="font-size:.95rem">Personal productivity pattern</h4>
+        <p class="text-muted2 small">Berdasarkan catatan mood, energi, dan stres kamu — bukan diagnosis, hanya pola sederhana.</p>
+        <div id="patternInsight" class="insight-card">Log your state daily to see a pattern here.</div>
+      </div>
+      <div class="card-noto p-3 mb-3">
+        <h4 style="font-size:.95rem" class="mb-2">Achievements</h4>
+        <div id="achievementsList" class="text-muted2 small">Complete tasks and focus sessions to unlock achievements.</div>
+      </div>
+      <div class="card-noto p-3">
+        <button class="btn btn-ghost btn-sm" onclick="resetData()">Reset all data</button>
+      </div>
+    </div>
+
+  </div>
+
+  <div class="bottom-nav">
+    <div class="nav-item active" data-view="dashboard" onclick="showView('dashboard')">⌂<span>Home</span></div>
+    <div class="nav-item" data-view="tasks" onclick="showView('tasks')">☑<span>Tasks</span></div>
+    <div class="nav-item" data-view="focus" onclick="showView('focus')">◷<span>Focus</span></div>
+    <div class="nav-item" data-view="notes" onclick="showView('notes')">✎<span>Notes</span></div>
+    <div class="nav-item" data-view="profile" onclick="showView('profile')">◐<span>Profile</span></div>
+  </div>
+</div>
+
+<!-- Quick Add Modal -->
+<div class="modal fade" id="quickAddModal" tabindex="-1">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content" style="border-radius:16px;border:none">
+      <div class="modal-body p-4">
+        <h5 class="mb-3">Quick Add Task</h5>
+        <input class="form-control mb-2" id="qaTitle" placeholder="What needs to get done?">
+        <div class="row g-2 mb-3">
+          <div class="col-6"><input type="date" class="form-control form-control-sm" id="qaDeadline"></div>
+          <div class="col-6">
+            <select class="form-select form-select-sm" id="qaPriority">
+              <option value="low">Low priority</option>
+              <option value="medium" selected>Medium priority</option>
+              <option value="high">High priority</option>
+            </select>
+          </div>
+        </div>
+        <input class="form-control form-control-sm mb-3" id="qaCategory" placeholder="Category (e.g. Work, Study)">
+        <button class="btn btn-accent w-100" onclick="addTask()">Add Task</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Focus overlay -->
+<div id="focusOverlay">
+  <div class="text-muted2 mb-2" id="focusTaskLabel">General focus session</div>
+  <div class="timer-display" id="timerDisplay">25:00</div>
+  <div class="text-muted2 mt-2" id="focusPhaseLabel">Focus</div>
+  <div class="d-flex gap-2 mt-4">
+    <button class="btn btn-ghost" id="pauseBtn" onclick="togglePause()">Pause</button>
+    <button class="btn btn-ghost" onclick="endFocus()">End Session</button>
+  </div>
+</div>
+
+<div class="toast-noto" id="toast"></div>
+
+<script>
+/* ---------- state ---------- */
+const WA_NUMBER = "[NOMOR_WHATSAPP]";
+const waLink = "https://wa.me/" + WA_NUMBER;
+["waLanding","waFooter","waSidebar"].forEach(id=>document.getElementById(id).href=waLink);
+
+const store = {
+  get(k,d){try{const v=localStorage.getItem('noto_'+k);return v?JSON.parse(v):d;}catch(e){return d;}},
+  set(k,v){try{localStorage.setItem('noto_'+k,JSON.stringify(v));}catch(e){}}
+};
+let tasks = store.get('tasks',[]);
+let notes = store.get('notes',[]);
+let states = store.get('states',[]); // {date,mood,energy,stress}
+let stats = store.get('stats',{streak:0,points:0,sessions:0,lastActive:null});
+let quickAddModal;
+
+function save(){store.set('tasks',tasks);store.set('notes',notes);store.set('states',states);store.set('stats',stats);}
+function toast(msg){const t=document.getElementById('toast');t.textContent=msg;t.classList.add('show');setTimeout(()=>t.classList.remove('show'),1800);}
+function uid(){return Date.now()+Math.random().toString(16).slice(2);}
+
+function enterApp(){
+  document.getElementById('landing').style.display='none';
+  document.getElementById('app').style.display='block';
+  quickAddModal = new bootstrap.Modal(document.getElementById('quickAddModal'));
+  init();
+}
+
+function showView(name){
+  document.querySelectorAll('.view').forEach(v=>v.classList.remove('active'));
+  document.getElementById('view-'+name).classList.add('active');
+  document.querySelectorAll('.nav-item[data-view]').forEach(n=>n.classList.toggle('active',n.dataset.view===name));
+  if(name==='notes')renderNotes();
+  if(name==='profile')renderProfile();
+  if(name==='focus')fillFocusTaskSelect();
+}
+
+/* ---------- greeting / date ---------- */
+function init(){
+  const h=new Date().getHours();
+  document.getElementById('greeting').textContent = h<12?"Good morning":h<18?"Good afternoon":"Good evening";
+  document.getElementById('todayDate').textContent = new Date().toLocaleDateString('en-US',{weekday:'long',month:'long',day:'numeric'});
+  buildMoodPicker();
+  renderDashboard();
+  renderTasks();
+  bumpStreak();
+}
+
+function buildMoodPicker(){
+  const moods=[['😞','low'],['😐','okay'],['🙂','good'],['😄','great']];
+  const wrap=document.getElementById('moodPicker');
+  wrap.innerHTML='';
+  let selected='okay';
+  moods.forEach(([emoji,val])=>{
+    const b=document.createElement('button');
+    b.type='button';b.className='btn btn-ghost btn-sm';b.textContent=emoji;
+    b.onclick=()=>{selected=val;wrap.dataset.selected=val;[...wrap.children].forEach(c=>c.style.borderColor='var(--line)');b.style.borderColor='var(--accent)';};
+    wrap.appendChild(b);
+  });
+  wrap.dataset.selected='okay';
+}
+
+function logState(){
+  const mood = document.getElementById('moodPicker').dataset.selected||'okay';
+  const energy = +document.getElementById('energyRange').value;
+  const stress = +document.getElementById('stressRange').value;
+  const today = new Date().toDateString();
+  states = states.filter(s=>s.date!==today);
+  states.push({date:today,mood,energy,stress});
+  save();
+  toast('Today\'s state saved');
+  renderDashboard();
+}
+
+/* ---------- tasks ---------- */
+function openQuickAdd(){
+  document.getElementById('qaTitle').value='';
+  document.getElementById('qaDeadline').value='';
+  document.getElementById('qaCategory').value='';
+  document.getElementById('qaPriority').value='medium';
+  quickAddModal.show();
+}
+function addTask(){
+  const title=document.getElementById('qaTitle').value.trim();
+  if(!title){toast('Please enter a task title');return;}
+  tasks.push({
+    id:uid(),title,
+    deadline:document.getElementById('qaDeadline').value,
+    priority:document.getElementById('qaPriority').value,
+    category:document.getElementById('qaCategory').value.trim()||'General',
+    done:false, createdAt:Date.now()
+  });
+  save();
+  quickAddModal.hide();
+  toast('Task added');
+  renderDashboard();renderTasks();
+}
+function toggleTask(id){
+  const t=tasks.find(x=>x.id===id); if(!t)return;
+  t.done=!t.done;
+  if(t.done){stats.points+=10;save();toast('Nice work! +10 points');}
+  else{save();}
+  renderDashboard();renderTasks();
+}
+function deleteTask(id){
+  if(!confirm('Delete this task?'))return;
+  tasks=tasks.filter(t=>t.id!==id);save();renderDashboard();renderTasks();
+}
+function priorityChip(p){
+  const map={low:['Low','chip-low'],medium:['Medium','chip-med'],high:['High','chip-high']};
+  const [label,cls]=map[p]||map.medium;
+  return `<span class="chip ${cls}">${label}</span>`;
+}
+function taskRow(t){
+  return `<div class="task-row">
+    <div class="task-check ${t.done?'done':''}" onclick="toggleTask('${t.id}')">${t.done?'✓':''}</div>
+    <div class="flex-grow-1">
+      <div class="task-title ${t.done?'done':''}">${escapeHtml(t.title)}</div>
+      <div class="small text-muted2">${t.category}${t.deadline?' · due '+t.deadline:''}</div>
+    </div>
+    ${priorityChip(t.priority)}
+    <span role="button" class="text-muted2 ms-2" onclick="deleteTask('${t.id}')">✕</span>
+  </div>`;
+}
+function escapeHtml(s){const d=document.createElement('div');d.textContent=s;return d.innerHTML;}
+
+function renderTasks(){
+  const list=document.getElementById('allTasksList');
+  const sorted=[...tasks].sort((a,b)=>(a.done-b.done)|| priorityRank(b.priority)-priorityRank(a.priority));
+  list.innerHTML = sorted.map(taskRow).join('');
+  document.getElementById('tasksEmpty').style.display = tasks.length?'none':'block';
+}
+function priorityRank(p){return p==='high'?3:p==='medium'?2:1;}
+
+function renderDashboard(){
+  const pending = tasks.filter(t=>!t.done);
+  const today = document.getElementById('todayTasksList');
+  today.innerHTML = pending.length? pending.slice(0,5).map(taskRow).join('') : '<div class="empty-state">No pending tasks. Enjoy the calm 🌿</div>';
+  const next = pending.sort((a,b)=>priorityRank(b.priority)-priorityRank(a.priority))[0];
+  document.getElementById('nextTaskBox').innerHTML = next
+    ? `Start with <strong>${escapeHtml(next.title)}</strong> — it's your highest priority right now.`
+    : 'No pending tasks — add one to get started.';
+  document.getElementById('dashInsight').textContent = generateInsight(pending.length);
+  document.getElementById('streakCount').textContent = stats.streak;
+  document.getElementById('pointsCount').textContent = stats.points;
+  document.getElementById('sessionCount').textContent = stats.sessions + ' focus sessions';
+}
+
+function generateInsight(pendingCount){
+  if(pendingCount===0) return "All caught up. A good moment to plan tomorrow.";
+  if(pendingCount>=6) return "You have a lot on your plate — try breaking your biggest task into two smaller ones.";
+  const recent = states.slice(-5);
+  const avgEnergy = recent.length? recent.reduce((s,x)=>s+x.energy,0)/recent.length : null;
+  if(avgEnergy && avgEnergy<2.5) return "Your energy's been lower lately — consider a lighter task to start.";
+  return `You have ${pendingCount} task${pendingCount>1?'s':''} today. Let's begin with the most important one.`;
+}
+
+function bumpStreak(){
+  const today=new Date().toDateString();
+  if(stats.lastActive===today)return;
+  const y=new Date();y.setDate(y.getDate()-1);
+  stats.streak = stats.lastActive===y.toDateString() ? stats.streak+1 : 1;
+  stats.lastActive=today; save();
+}
+
+/* ---------- notes ---------- */
+function addNote(){
+  const text=document.getElementById('noteInput').value.trim();
+  if(!text){toast('Write something first');return;}
+  notes.unshift({id:uid(),text,tag:document.getElementById('noteTag').value.trim(),pinned:false,createdAt:Date.now()});
+  document.getElementById('noteInput').value='';document.getElementById('noteTag').value='';
+  save();toast('Note saved');renderNotes();
+}
+function togglePin(id){const n=notes.find(x=>x.id===id);n.pinned=!n.pinned;save();renderNotes();}
+function deleteNote(id){notes=notes.filter(n=>n.id!==id);save();renderNotes();}
+function renderNotes(){
+  const q=(document.getElementById('noteSearch').value||'').toLowerCase();
+  const filtered=notes.filter(n=>n.text.toLowerCase().includes(q)||n.tag.toLowerCase().includes(q))
+    .sort((a,b)=>b.pinned-a.pinned || b.createdAt-a.createdAt);
+  document.getElementById('notesList').innerHTML = filtered.map(n=>`
+    <div class="col-md-6">
+      <div class="card-noto p-3 h-100">
+        <div class="d-flex justify-content-between">
+          <span class="small text-muted2">${n.tag?'#'+escapeHtml(n.tag):''}</span>
+          <div>
+            <span role="button" onclick="togglePin('${n.id}')">${n.pinned?'📌':'📍'}</span>
+            <span role="button" class="text-muted2 ms-2" onclick="deleteNote('${n.id}')">✕</span>
+          </div>
+        </div>
+        <div class="mt-1">${escapeHtml(n.text)}</div>
+      </div>
+    </div>`).join('');
+  document.getElementById('notesEmpty').style.display = notes.length?'none':'block';
+}
+
+/* ---------- focus mode ---------- */
+let focusMinutes=25, breakMinutes=5, timerId=null, remaining=0, onBreak=false, paused=false, currentTaskId='';
+function fillFocusTaskSelect(){
+  const sel=document.getElementById('focusTaskSelect');
+  sel.innerHTML='<option value="">General focus session</option>'+
+    tasks.filter(t=>!t.done).map(t=>`<option value="${t.id}">${escapeHtml(t.title)}</option>`).join('');
+}
+function pickMode(min,btn){
+  focusMinutes=min; breakMinutes = min===25?5:min===50?10:3;
+  document.querySelectorAll('#modePicker button').forEach(b=>b.style.borderColor='var(--line)');
+  btn.style.borderColor='var(--accent)';
+}
+function startFocus(){
+  currentTaskId=document.getElementById('focusTaskSelect').value;
+  const t=tasks.find(x=>x.id===currentTaskId);
+  document.getElementById('focusTaskLabel').textContent = t?t.title:'General focus session';
+  onBreak=false;paused=false;remaining=focusMinutes*60;
+  document.getElementById('focusOverlay').style.display='flex';
+  document.getElementById('focusPhaseLabel').textContent='Focus';
+  tick();
+  timerId=setInterval(tick,1000);
+}
+function tick(){
+  if(paused)return;
+  const m=String(Math.floor(remaining/60)).padStart(2,'0');
+  const s=String(remaining%60).padStart(2,'0');
+  document.getElementById('timerDisplay').textContent=`${m}:${s}`;
+  if(remaining<=0){
+    if(!onBreak){
+      stats.sessions++; stats.points+=15; save();
+      onBreak=true; remaining=breakMinutes*60;
+      document.getElementById('focusPhaseLabel').textContent='Break';
+      toast('Focus session complete — take a break');
+    } else {
+      endFocus(); return;
+    }
+  }
+  remaining--;
+}
+function togglePause(){paused=!paused;document.getElementById('pauseBtn').textContent=paused?'Resume':'Pause';}
+function endFocus(){
+  clearInterval(timerId);
+  document.getElementById('focusOverlay').style.display='none';
+  renderDashboard();
+  toast(`Session ended · ${stats.sessions} sessions today`);
+}
+
+/* ---------- profile ---------- */
+function renderProfile(){
+  if(states.length<2){
+    document.getElementById('patternInsight').textContent='Log your state daily to see a pattern here.';
+  } else {
+    const best = [...states].sort((a,b)=>b.energy-a.energy)[0];
+    document.getElementById('patternInsight').textContent =
+      `Your energy tends to be higher on days marked "${best.mood}" — try scheduling important tasks on similar days.`;
+  }
+  const ach=[];
+  if(stats.streak>=3) ach.push('🔥 3-day streak');
+  if(stats.sessions>=1) ach.push('🎯 First focus session');
+  if(tasks.filter(t=>t.done).length>=5) ach.push('✅ 5 tasks completed');
+  document.getElementById('achievementsList').innerHTML = ach.length? ach.join(' &nbsp;·&nbsp; ') : 'Complete tasks and focus sessions to unlock achievements.';
+}
+
+function resetData(){
+  if(!confirm('This will erase all your NOTO data. Continue?'))return;
+  localStorage.removeItem('noto_tasks');localStorage.removeItem('noto_notes');
+  localStorage.removeItem('noto_states');localStorage.removeItem('noto_stats');
+  location.reload();
+}
+</script>
+</body>
+</html>
