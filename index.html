@@ -39,6 +39,8 @@ main{padding:8px 22px 20px}
 .bar{height:4px;background:var(--ln);border-radius:4px;overflow:hidden;margin-top:8px}.bar i{display:block;height:100%;background:var(--ac)}
 .ins{border-left:2px solid var(--ac);padding:2px 0 2px 14px;margin:26px 0}
 .sec{margin-top:28px}
+.hero{margin:10px 22px 0;border-radius:18px;overflow:hidden;background:#8FB0BE;aspect-ratio:2/1;max-height:190px}
+.hero img{display:block;width:100%;height:100%;object-fit:cover;object-position:center}
 #sh{position:fixed;left:50%;bottom:0;width:100%;max-width:520px;transform:translate(-50%,105%);background:#fff;border-radius:24px 24px 0 0;padding:12px 22px calc(24px + env(safe-area-inset-bottom));z-index:30;transition:transform .25s;max-height:90vh;overflow:auto}
 .so #sh{transform:translate(-50%,0)}
 #bd{position:fixed;inset:0;background:#0006;opacity:0;pointer-events:none;transition:opacity .25s;z-index:20}
@@ -114,7 +116,8 @@ function vHome(){const t=next(),td=active().filter(x=>x.due&&x.due<=ymd()),dn=S.
  const g=(h<11?'Good morning':h<17?'Good afternoon':'Good evening')+(n?', '+esc(n):'')+'.';
  const ev=S.events.filter(e=>e.date>=ymd()).sort(cE)[0];
  return `<div class="top"><div class="muted">${new Date().toLocaleDateString(undefined,{weekday:'long',day:'numeric',month:'long'})}</div><div><button onclick="searchSheet()" aria-label="Search">${ic('search')}</button><button onclick="settings()" aria-label="Settings">${ic('gear')}</button></div></div>
- <main><div class="lbl" style="margin-top:28px">${g}</div><div class="big" style="font-size:1rem;color:var(--mu);font-weight:400">What's next?</div>
+ <div class="hero"><img src="assets/hero.jpg" width="850" height="425" alt="Illustration of a busy person juggling many tasks" decoding="async"></div>
+ <main><div class="lbl" style="margin-top:20px">${g}</div><div class="big" style="font-size:1rem;color:var(--mu);font-weight:400">What's next?</div>
  ${t?`<div class="big" style="font-size:2.1rem;margin-top:10px" onclick="taskSheet('${t.id}')">${esc(t.title)}</div><div class="muted">${dueLbl(t.due)} · ${t.pri} priority</div>
  <button class="btn btn-noto mt-4 w-100" onclick="focusSheet('${t.id}')">Start Focus</button>`:empty('Nothing planned yet.','Start with one small task.')+`<button class="btn btn-noto w-100" onclick="taskSheet()">Add a task</button>`}
  <div class="sec"><div class="lbl">Today</div><div>${tot?`${tot} task${tot>1?'s':''}${est?' · '+dur(est)+' estimated':''}`:'No tasks due'}</div>${tot?`<div class="bar"><i style="width:${Math.round(dn/tot*100)}%"></i></div><div class="muted mt-1">${dn} of ${tot} done</div>`:''}</div>
