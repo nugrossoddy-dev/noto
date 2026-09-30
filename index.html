@@ -1,560 +1,242 @@
 <!DOCTYPE html>
-<html lang="id">
-<head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>NOTO — Get Things Done</title>
-<link rel="manifest" href="data:application/manifest+json,{}">
+<html lang="en"><head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#FAFAF7">
+<title>NOTO</title>
+<link rel="manifest" href="manifest.json">
+<link rel="icon" href="icon.svg">
+<link rel="apple-touch-icon" href="icon.svg">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@200;400;500;600&display=swap" rel="stylesheet">
 <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
 <style>
-:root{
-  --bg:#FAF9F6; --surface:#FFFFFF; --ink:#20241F; --ink-soft:#5B6159;
-  --line:#E7E4DC; --accent:#2373F4; --accent-soft:#E8EFFE; --accent-ink:#15499E;
-  --secondary:#FFFFFF;
-  --radius:14px; --shadow:0 1px 2px rgba(32,36,31,.05);
-}
-}
-*{box-sizing:border-box}
-html,body{height:100%}
-body{background:var(--bg);color:var(--ink);font-family:'Inter',sans-serif;font-weight:400;
-  padding-top:env(safe-area-inset-top,0);padding-bottom:env(safe-area-inset-bottom,0);}
-h1,h2,h3,h4,.brand{font-weight:700;letter-spacing:-.02em}
-.text-muted2{color:var(--ink-soft)}
-.btn-accent{background:var(--accent);border:none;color:#fff;border-radius:10px;font-weight:600;padding:.6rem 1.3rem}
-.btn-accent:hover{background:var(--accent-ink);color:#fff}
-.btn-ghost{background:transparent;border:1px solid var(--line);color:var(--ink);border-radius:10px;font-weight:600}
-.btn-ghost:hover{background:var(--accent-soft);border-color:var(--accent)}
-.card-noto{background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);box-shadow:var(--shadow)}
-.chip{display:inline-block;padding:.25rem .65rem;border-radius:20px;font-size:.78rem;font-weight:600}
-.chip-low{background:var(--accent-soft);color:var(--accent-ink)}
-.chip-med{background:#FFF3DE;color:#8A5A17}
-.chip-high{background:#FBE7E5;color:#A13A32}
-/* ---------- Landing ---------- */
-#landing{min-height:100vh}
-.landing-nav{padding:1.1rem 1.5rem;display:flex;justify-content:space-between;align-items:center}
-.hero{padding:5rem 1.5rem 4rem;text-align:center;max-width:640px;margin:0 auto}
-.hero h1{font-size:clamp(2.3rem,6vw,3.4rem);line-height:1.05}
-.hero p{font-size:1.15rem;color:var(--ink-soft);margin-top:1rem}
-.feature-row{max-width:920px;margin:0 auto;padding:2rem 1.5rem 5rem}
-.feature-item{padding:1.4rem;border-top:1px solid var(--line)}
-.feature-item h3{font-size:1.05rem;margin-bottom:.3rem}
-.feature-item p{color:var(--ink-soft);font-size:.92rem;margin:0}
-footer.site{border-top:1px solid var(--line);padding:2rem 1.5rem;text-align:center;color:var(--ink-soft);font-size:.88rem}
-/* ---------- App shell ---------- */
-#app{display:none;min-height:100vh}
-.sidebar{width:220px;background:var(--surface);border-right:1px solid var(--line);height:100vh;position:fixed;top:0;left:0;padding:1.3rem 1rem;display:flex;flex-direction:column}
-.sidebar .brand{padding:.4rem .6rem 1.4rem}
-.nav-item{display:flex;align-items:center;gap:.6rem;padding:.6rem .8rem;border-radius:10px;color:var(--ink-soft);
-  font-weight:600;font-size:.92rem;cursor:pointer;margin-bottom:.15rem}
-.nav-item:hover{background:var(--accent-soft)}
-.nav-item.active{background:var(--accent-soft);color:var(--accent-ink)}
-.main-area{margin-left:220px;padding:1.8rem 2.2rem 3rem;max-width:900px}
-.view{display:none}
-.view.active{display:block}
-.page-title{font-size:1.5rem;margin-bottom:.2rem}
-.toast-noto{position:fixed;bottom:24px;left:50%;transform:translateX(-50%);background:var(--ink);color:#fff;
-  padding:.6rem 1.1rem;border-radius:10px;font-size:.88rem;z-index:2000;opacity:0;transition:opacity .25s}
-.toast-noto.show{opacity:1}
-.task-row{display:flex;align-items:center;gap:.8rem;padding:.75rem .3rem;border-bottom:1px solid var(--line)}
-.task-row:last-child{border-bottom:none}
-.task-check{width:22px;height:22px;border-radius:50%;border:2px solid var(--line);flex:none;cursor:pointer;display:flex;align-items:center;justify-content:center}
-.task-check.done{background:var(--accent);border-color:var(--accent);color:#fff}
-.task-title.done{text-decoration:line-through;color:var(--ink-soft)}
-.insight-card{background:var(--accent-soft);border-radius:12px;padding:1rem 1.2rem;color:var(--accent-ink);font-weight:500;font-size:.92rem}
-.empty-state{text-align:center;color:var(--ink-soft);padding:2.5rem 1rem}
-/* focus mode */
-#focusOverlay{position:fixed;inset:0;background:var(--bg);z-index:1500;display:none;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:2rem}
-.timer-display{font-size:clamp(3.5rem,14vw,6rem);font-weight:800;letter-spacing:-.02em}
-/* mobile bottom nav */
-.bottom-nav{display:none}
-@media (max-width:860px){
-  .sidebar{display:none}
-  .main-area{margin-left:0;padding:1.3rem 1rem 5.5rem}
-  .bottom-nav{display:flex;position:fixed;bottom:0;left:0;right:0;background:var(--surface);
-    border-top:1px solid var(--line);z-index:1000;padding-bottom:env(safe-area-inset-bottom,0)}
-  .bottom-nav .nav-item{flex:1;flex-direction:column;text-align:center;border-radius:0;font-size:.72rem;gap:.15rem}
-}
-@media (prefers-color-scheme:dark){
-  :root:not([data-theme="light"]){--bg:#181A17;--surface:#20231F;--ink:#EDEFEA;--ink-soft:#9CA39A;
-    --line:#31352E;--accent:#7FAF8B;--accent-soft:#26302A;--accent-ink:#B7D8BE;}
-}
-</style>
-</head>
+:root{--ac:#2E6B5A;--bg:#FAFAF7;--ink:#1E2022;--mu:#7A7F84;--ln:#ECEBE6}
+*{-webkit-tap-highlight-color:transparent}
+body{font-family:Inter,system-ui,sans-serif;background:var(--bg);color:var(--ink);max-width:520px;margin:0 auto;min-height:100vh;padding-bottom:96px}
+main{padding:8px 22px 20px}
+.ic{width:22px;height:22px}
+.muted{color:var(--mu);font-size:.9rem}
+.lbl{color:var(--mu);font-size:.85rem;margin-bottom:6px}
+.big{font-size:1.9rem;font-weight:600;line-height:1.2;letter-spacing:-.02em;margin:0 0 6px}
+.btn-noto{background:var(--ac);color:#fff;border:0;border-radius:14px;padding:.8rem 1.2rem;font-weight:500}
+.btn-noto:active,.btn-noto:hover{background:var(--ac);color:#fff;opacity:.88}
+.btn-soft{background:#fff;border:1px solid var(--ln);border-radius:14px;padding:.75rem .5rem;font-weight:500;font-size:.9rem}
+.top{display:flex;justify-content:space-between;align-items:center;padding:18px 22px 4px}
+.top button,.link{background:0;border:0;color:var(--ink);padding:8px}
+.bn{position:fixed;bottom:0;left:50%;transform:translateX(-50%);width:100%;max-width:520px;background:#fff;border-top:1px solid var(--ln);display:flex;padding-bottom:env(safe-area-inset-bottom);z-index:10}
+.bn button{flex:1;background:0;border:0;padding:10px 0 8px;color:var(--mu);font-size:.68rem;display:flex;flex-direction:column;align-items:center;gap:2px}
+.bn button.on{color:var(--ac);font-weight:600}
+.fab{position:fixed;right:max(18px,calc(50vw - 242px));bottom:calc(84px + env(safe-area-inset-bottom));width:54px;height:54px;border-radius:18px;background:var(--ink);color:#fff;border:0;box-shadow:0 6px 18px #0002;z-index:9}
+.ri{display:flex;gap:14px;align-items:center;padding:14px 0;border-bottom:1px solid var(--ln);touch-action:pan-y}
+.ri .g{flex:1;min-width:0}.tt{font-weight:500}.done .tt{text-decoration:line-through;color:var(--mu)}
+.cb{width:24px;height:24px;accent-color:var(--ac);flex:none}
+.hi{width:8px;height:8px;border-radius:50%;background:var(--ac);flex:none}
+.tabs{display:flex;gap:18px;margin:6px 0 4px;overflow:auto}
+.tabs button{background:0;border:0;padding:8px 0;color:var(--mu);font-weight:500;border-bottom:2px solid transparent}
+.tabs button.on{color:var(--ink);border-color:var(--ink)}
+.ch{border:1px solid var(--ln);background:#fff;border-radius:12px;padding:.5rem .9rem}
+.ch.on{background:var(--ink);color:#fff;border-color:var(--ink)}
+.bar{height:4px;background:var(--ln);border-radius:4px;overflow:hidden;margin-top:8px}.bar i{display:block;height:100%;background:var(--ac)}
+.ins{border-left:2px solid var(--ac);padding:2px 0 2px 14px;margin:26px 0}
+.sec{margin-top:28px}
+#sh{position:fixed;left:50%;bottom:0;width:100%;max-width:520px;transform:translate(-50%,105%);background:#fff;border-radius:24px 24px 0 0;padding:12px 22px calc(24px + env(safe-area-inset-bottom));z-index:30;transition:transform .25s;max-height:90vh;overflow:auto}
+.so #sh{transform:translate(-50%,0)}
+#bd{position:fixed;inset:0;background:#0006;opacity:0;pointer-events:none;transition:opacity .25s;z-index:20}
+.so #bd{opacity:1;pointer-events:auto}
+.grab{width:40px;height:4px;background:var(--ln);border-radius:4px;margin:0 auto 14px}
+#tt{position:fixed;bottom:100px;left:50%;transform:translateX(-50%);background:var(--ink);color:#fff;padding:10px 16px;border-radius:12px;font-size:.85rem;opacity:0;transition:opacity .2s;z-index:50;pointer-events:none;max-width:88%;text-align:center}
+#tt.on{opacity:1}
+#fo{position:fixed;inset:0;background:#17181a;color:#fff;z-index:40;display:none;align-items:center;justify-content:center;text-align:center;padding:24px}
+#fo.on{display:flex}
+.clk{font-size:5.4rem;font-weight:200;font-variant-numeric:tabular-nums;letter-spacing:-.03em;margin:18px 0 6px}
+.m2{color:#9aa0a6;font-size:.9rem}
+.fob{display:flex;gap:12px;justify-content:center;margin-top:36px}.fob .btn{min-width:110px;border-radius:14px;padding:.8rem}
+.sc{display:flex;gap:8px;margin-bottom:14px}.sc .ch{flex:1;padding:.6rem 0}
+.form-control,.form-select{border-radius:12px}
+.empty{text-align:center;padding:48px 0;color:var(--mu)}.empty b{display:block;color:var(--ink);font-size:1.1rem;margin-bottom:4px}
+.kv{display:flex;justify-content:space-between;padding:12px 0;border-bottom:1px solid var(--ln)}.kv span:first-child{color:var(--mu)}
+@media (prefers-reduced-motion:reduce){*{transition:none!important}}
+</style></head>
 <body>
-
-<!-- ================= LANDING ================= -->
-<div id="landing">
-  <div class="landing-nav">
-    <span class="brand">noto</span>
-    <div>
-      <button class="btn btn-accent btn-sm" onclick="enterApp()">Start Organizing</button>
-    </div>
-  </div>
-  <div class="hero">
-    <h1>Get Things Done</h1>
-    <p>One calm space for your tasks, focus, and thoughts.</p>
-    <div class="d-flex gap-2 justify-content-center mt-4 flex-wrap">
-      <button class="btn btn-accent" onclick="enterApp()">Start Organizing</button>
-      <a class="btn btn-ghost" id="waLanding" href="#" target="_blank">Contact Me</a>
-    </div>
-  </div>
-  <div class="feature-row row g-0">
-    <div class="col-md-4 feature-item">
-      <h3>Time Management</h3>
-      <p>Task dan jadwal sederhana, lengkap dengan prioritas dan pengingat ringan.</p>
-    </div>
-    <div class="col-md-4 feature-item">
-      <h3>Focus Mode</h3>
-      <p>Timer deep work bebas distraksi — 25/5, 50/10, atau custom.</p>
-    </div>
-    <div class="col-md-4 feature-item">
-      <h3>Reference Hub</h3>
-      <p>Micro notes untuk ide dan referensi, tanpa editor yang rumit.</p>
-    </div>
-  </div>
-  <footer class="site">
-    noto — a calm productivity companion ·
-    <a href="#" id="waFooter" target="_blank" class="text-decoration-none" style="color:var(--accent-ink);font-weight:600">Let's Talk</a>
-  </footer>
-</div>
-
-<!-- ================= APP ================= -->
-<div id="app">
-  <div class="sidebar">
-    <div class="brand">noto</div>
-    <div class="nav-item active" data-view="dashboard" onclick="showView('dashboard')">⌂ Home</div>
-    <div class="nav-item" data-view="tasks" onclick="showView('tasks')">☑ Tasks</div>
-    <div class="nav-item" data-view="focus" onclick="showView('focus')">◷ Focus</div>
-    <div class="nav-item" data-view="notes" onclick="showView('notes')">✎ Notes</div>
-    <div class="nav-item" data-view="profile" onclick="showView('profile')">◐ Profile</div>
-    <div class="mt-auto">
-      <a class="nav-item" id="waSidebar" href="#" target="_blank">💬 Contact Me</a>
-    </div>
-  </div>
-
-  <div class="main-area">
-
-    <!-- DASHBOARD -->
-    <div class="view active" id="view-dashboard">
-      <div class="d-flex justify-content-between align-items-start mb-3">
-        <div>
-          <div class="page-title" id="greeting">Hi there</div>
-          <div class="text-muted2" id="todayDate"></div>
-        </div>
-        <button class="btn btn-accent btn-sm" onclick="openQuickAdd()">+ Quick Add</button>
-      </div>
-
-      <div class="insight-card mb-3" id="dashInsight">Let's set your first task today.</div>
-
-      <div class="card-noto p-3 mb-3">
-        <h4 class="mb-2" style="font-size:1rem">What should I do next?</h4>
-        <div id="nextTaskBox" class="text-muted2">No pending tasks — add one to get started.</div>
-      </div>
-
-      <div class="row g-3">
-        <div class="col-md-6">
-          <div class="card-noto p-3">
-            <h4 style="font-size:.95rem" class="mb-2">Today's tasks</h4>
-            <div id="todayTasksList"></div>
-          </div>
-        </div>
-        <div class="col-md-6">
-          <div class="card-noto p-3">
-            <h4 style="font-size:.95rem" class="mb-2">How are you feeling?</h4>
-            <div class="mb-2">
-              <label class="form-label small text-muted2 mb-1">Mood</label>
-              <div id="moodPicker" class="d-flex gap-2"></div>
-            </div>
-            <label class="form-label small text-muted2 mb-1">Energy</label>
-            <input type="range" min="1" max="5" value="3" class="form-range" id="energyRange">
-            <label class="form-label small text-muted2 mb-1 mt-2">Stress</label>
-            <input type="range" min="1" max="5" value="3" class="form-range" id="stressRange">
-            <button class="btn btn-ghost btn-sm mt-2 w-100" onclick="logState()">Save today's state</button>
-          </div>
-        </div>
-      </div>
-
-      <div class="card-noto p-3 mt-3 d-flex justify-content-between align-items-center">
-        <div><strong id="streakCount">0</strong> <span class="text-muted2">day streak · </span><strong id="pointsCount">0</strong> <span class="text-muted2">points</span></div>
-        <span class="text-muted2 small" id="sessionCount">0 focus sessions</span>
-      </div>
-    </div>
-
-    <!-- TASKS -->
-    <div class="view" id="view-tasks">
-      <div class="d-flex justify-content-between align-items-center mb-3">
-        <div class="page-title">Tasks</div>
-        <button class="btn btn-accent btn-sm" onclick="openQuickAdd()">+ Quick Add</button>
-      </div>
-      <div class="card-noto p-3">
-        <div id="allTasksList"></div>
-        <div class="empty-state" id="tasksEmpty" style="display:none">No tasks yet. Add your first task above.</div>
-      </div>
-    </div>
-
-    <!-- FOCUS -->
-    <div class="view" id="view-focus">
-      <div class="page-title mb-3">Focus Mode</div>
-      <div class="card-noto p-4">
-        <label class="form-label small text-muted2">Working on</label>
-        <select class="form-select mb-3" id="focusTaskSelect"><option value="">General focus session</option></select>
-        <label class="form-label small text-muted2">Mode</label>
-        <div class="d-flex gap-2 mb-3 flex-wrap" id="modePicker">
-          <button class="btn btn-ghost btn-sm" data-min="25" onclick="pickMode(25,this)">25 / 5</button>
-          <button class="btn btn-ghost btn-sm" data-min="50" onclick="pickMode(50,this)">50 / 10</button>
-          <button class="btn btn-ghost btn-sm" data-min="15" onclick="pickMode(15,this)">Custom 15</button>
-        </div>
-        <button class="btn btn-accent" onclick="startFocus()">Start Session</button>
-      </div>
-    </div>
-
-    <!-- NOTES -->
-    <div class="view" id="view-notes">
-      <div class="d-flex justify-content-between align-items-center mb-3">
-        <div class="page-title">Notes</div>
-      </div>
-      <div class="card-noto p-3 mb-3">
-        <input class="form-control mb-2" id="noteSearch" placeholder="Search notes..." oninput="renderNotes()">
-        <textarea class="form-control mb-2" id="noteInput" rows="2" placeholder="Write a quick note..."></textarea>
-        <div class="d-flex gap-2">
-          <input class="form-control form-control-sm" id="noteTag" placeholder="tag (optional)" style="max-width:160px">
-          <button class="btn btn-accent btn-sm" onclick="addNote()">Save Note</button>
-        </div>
-      </div>
-      <div id="notesList" class="row g-2"></div>
-      <div class="empty-state" id="notesEmpty" style="display:none">No notes yet. Capture your first idea above.</div>
-    </div>
-
-    <!-- PROFILE -->
-    <div class="view" id="view-profile">
-      <div class="page-title mb-3">Profile & Insights</div>
-      <div class="card-noto p-3 mb-3">
-        <h4 style="font-size:.95rem">Personal productivity pattern</h4>
-        <p class="text-muted2 small">Berdasarkan catatan mood, energi, dan stres kamu — bukan diagnosis, hanya pola sederhana.</p>
-        <div id="patternInsight" class="insight-card">Log your state daily to see a pattern here.</div>
-      </div>
-      <div class="card-noto p-3 mb-3">
-        <h4 style="font-size:.95rem" class="mb-2">Achievements</h4>
-        <div id="achievementsList" class="text-muted2 small">Complete tasks and focus sessions to unlock achievements.</div>
-      </div>
-      <div class="card-noto p-3">
-        <button class="btn btn-ghost btn-sm" onclick="resetData()">Reset all data</button>
-      </div>
-    </div>
-
-  </div>
-
-  <div class="bottom-nav">
-    <div class="nav-item active" data-view="dashboard" onclick="showView('dashboard')">⌂<span>Home</span></div>
-    <div class="nav-item" data-view="tasks" onclick="showView('tasks')">☑<span>Tasks</span></div>
-    <div class="nav-item" data-view="focus" onclick="showView('focus')">◷<span>Focus</span></div>
-    <div class="nav-item" data-view="notes" onclick="showView('notes')">✎<span>Notes</span></div>
-    <div class="nav-item" data-view="profile" onclick="showView('profile')">◐<span>Profile</span></div>
-  </div>
-</div>
-
-<!-- Quick Add Modal -->
-<div class="modal fade" id="quickAddModal" tabindex="-1">
-  <div class="modal-dialog modal-dialog-centered">
-    <div class="modal-content" style="border-radius:16px;border:none">
-      <div class="modal-body p-4">
-        <h5 class="mb-3">Quick Add Task</h5>
-        <input class="form-control mb-2" id="qaTitle" placeholder="What needs to get done?">
-        <div class="row g-2 mb-3">
-          <div class="col-6"><input type="date" class="form-control form-control-sm" id="qaDeadline"></div>
-          <div class="col-6">
-            <select class="form-select form-select-sm" id="qaPriority">
-              <option value="low">Low priority</option>
-              <option value="medium" selected>Medium priority</option>
-              <option value="high">High priority</option>
-            </select>
-          </div>
-        </div>
-        <input class="form-control form-control-sm mb-3" id="qaCategory" placeholder="Category (e.g. Work, Study)">
-        <button class="btn btn-accent w-100" onclick="addTask()">Add Task</button>
-      </div>
-    </div>
-  </div>
-</div>
-
-<!-- Focus overlay -->
-<div id="focusOverlay">
-  <div class="text-muted2 mb-2" id="focusTaskLabel">General focus session</div>
-  <div class="timer-display" id="timerDisplay">25:00</div>
-  <div class="text-muted2 mt-2" id="focusPhaseLabel">Focus</div>
-  <div class="d-flex gap-2 mt-4">
-    <button class="btn btn-ghost" id="pauseBtn" onclick="togglePause()">Pause</button>
-    <button class="btn btn-ghost" onclick="endFocus()">End Session</button>
-  </div>
-</div>
-
-<div class="toast-noto" id="toast"></div>
-
+<div id="app"></div>
+<button class="fab" id="fab" aria-label="Add">+</button>
+<nav class="bn" id="nav"></nav>
+<div id="bd"></div><div id="sh"></div><div id="tt"></div><div id="fo"></div>
 <script>
-/* ---------- state ---------- */
-const WA_NUMBER = "6295391899614";
-const waLink = "https://wa.me/62895391899614";
-["waLanding","waFooter","waSidebar"].forEach(id=>document.getElementById(id).href=waLink);
+const K='noto_v1',FK='noto_focus_v1';
+let S=JSON.parse(localStorage.getItem(K)||'null')||{tasks:[],events:[],notes:[],sessions:[],checkins:[],prefs:{name:''}};
+let F=JSON.parse(localStorage.getItem(FK)||'null'),tab='home',tt='today',manualPri=false,iv;
+const save=()=>localStorage.setItem(K,JSON.stringify(S)),saveF=()=>F?localStorage.setItem(FK,JSON.stringify(F)):localStorage.removeItem(FK);
+const $=s=>document.querySelector(s),uid=()=>Math.random().toString(36).slice(2,9),pad=n=>String(n).padStart(2,'0');
+const ymd=d=>{d=d||new Date();return d.getFullYear()+'-'+pad(d.getMonth()+1)+'-'+pad(d.getDate())};
+const addDays=n=>{const d=new Date();d.setDate(d.getDate()+n);return ymd(d)};
+const dur=m=>{m=Math.round(m);const h=Math.floor(m/60);return (h?h+'h ':'')+((m%60||!h)?m%60+'m':'').trim()};
+const esc=s=>String(s==null?'':s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+const P={home:'M3 11l9-8 9 8v10a1 1 0 0 1-1 1h-5v-7H9v7H4a1 1 0 0 1-1-1z',tasks:'M9 11l3 3 8-8M20 12v7a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h9',focus:'M12 22a10 10 0 1 0 0-20 10 10 0 0 0 0 20zM12 6v6l4 2',notes:'M4 4h16v16H4zM8 9h8M8 13h8M8 17h5',insights:'M4 20V10M10 20V4M16 20v-7M22 20H2',plus:'M12 5v14M5 12h14',search:'M11 19a8 8 0 1 0 0-16 8 8 0 0 0 0 16zM21 21l-4.3-4.3',gear:'M12 15a3 3 0 1 0 0-6 3 3 0 0 0 0 6zM19 12h2M3 12h2M12 3v2M12 19v2M5.6 5.6l1.4 1.4M17 17l1.4 1.4M5.6 18.4L7 17M17 7l1.4-1.4'};
+const ic=n=>`<svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="${P[n]}"/></svg>`;
+const NAV=[['home','Home'],['tasks','Tasks'],['focus','Focus'],['notes','Notes'],['insights','Insights']];
 
-const store = {
-  get(k,d){try{const v=localStorage.getItem('noto_'+k);return v?JSON.parse(v):d;}catch(e){return d;}},
-  set(k,v){try{localStorage.setItem('noto_'+k,JSON.stringify(v));}catch(e){}}
-};
-let tasks = store.get('tasks',[]);
-let notes = store.get('notes',[]);
-let states = store.get('states',[]); // {date,mood,energy,stress}
-let stats = store.get('stats',{streak:0,points:0,sessions:0,lastActive:null});
-let quickAddModal;
+/* ---------- logic ---------- */
+const active=()=>S.tasks.filter(t=>!t.done);
+const dd=d=>Math.round((new Date(d)-new Date(ymd()))/864e5);
+const score=t=>{const d=t.due?dd(t.due):7;return (d<0?50:d==0?40:d==1?25:Math.max(0,10-d))+({High:30,Medium:15,Low:0}[t.pri]||0)};
+const next=()=>active().sort((a,b)=>score(b)-score(a))[0];
+function suggest(due,imp,est){let s=0;const d=due?dd(due):9;s+=d<=0?3:d<=2?2:d<=5?1:0;if(imp)s+=2;if(est>=120)s+=1;if(active().length>8)s+=1;return s>=4?'High':s>=2?'Medium':'Low'}
+const dueLbl=d=>!d?'No deadline':d<ymd()?'Overdue':d===ymd()?'Due today':d===addDays(1)?'Due tomorrow':'Due '+new Date(d+'T00:00').toLocaleDateString(undefined,{day:'numeric',month:'short'});
+const sToday=()=>S.sessions.filter(x=>x.day===ymd());
+function bestHour(){if(!S.sessions.length)return null;const b={};S.sessions.forEach(x=>{const k=Math.floor(x.hr/2)*2;b[k]=(b[k]||0)+x.min});return +Object.entries(b).sort((a,c)=>c[1]-a[1])[0][0]}
+function streak(){const days=new Set([...S.sessions.map(x=>x.day),...S.tasks.filter(t=>t.done).map(t=>t.doneDay)]);let n=0,d=new Date();if(!days.has(ymd(d)))d.setDate(d.getDate()-1);while(days.has(ymd(d))){n++;d.setDate(d.getDate()-1)}return n}
+function insight(){const c=S.checkins.filter(x=>x.day===ymd()).pop(),n=active().filter(t=>t.due&&t.due<=ymd()).length,b=bestHour();
+ if(n>4)return 'You have several tasks today. Start with one small task.';
+ if(c&&c.energy>=4)return 'Your energy is high today. Consider starting with your most demanding task.';
+ if(c&&c.energy<=2)return 'Energy feels low. A short session on a small task can help.';
+ if(b!=null)return `You usually focus better between ${pad(b)}:00–${pad(b+2)}:00.`;
+ return 'Do a quick check-in to start seeing your productivity pattern.'}
+function recs(){const r=[],m=S.sessions.filter(x=>x.hr<12),a=S.sessions.filter(x=>x.hr>=12),av=l=>l.reduce((s,x)=>s+x.min,0)/l.length;
+ if(m.length&&a.length){if(av(m)>av(a))r.push('Your focus sessions are usually longer in the morning.','Try scheduling demanding tasks before noon.');else r.push('Your focus sessions are usually longer in the afternoon.')}
+ const en={};S.checkins.forEach(c=>en[c.day]=c.energy);const hi=[],lo=[];Object.keys(en).forEach(d=>{const n=S.tasks.filter(t=>t.doneDay===d).length;(en[d]>=4?hi:lo).push(n)});
+ const A=l=>l.reduce((s,x)=>s+x,0)/l.length;if(hi.length&&lo.length&&A(hi)>A(lo))r.push('You usually complete more tasks when your energy level is high.');
+ if(S.checkins.filter(c=>c.stress>=4).length>=3)r.push('Stress has been high lately. Consider shorter sessions with breaks.');
+ return r.length?r:['Use NOTO for a few days. Your productivity pattern will appear here.']}
 
-function save(){store.set('tasks',tasks);store.set('notes',notes);store.set('states',states);store.set('stats',stats);}
-function toast(msg){const t=document.getElementById('toast');t.textContent=msg;t.classList.add('show');setTimeout(()=>t.classList.remove('show'),1800);}
-function uid(){return Date.now()+Math.random().toString(16).slice(2);}
+/* ---------- ui helpers ---------- */
+function sheet(h){$('#sh').innerHTML='<div class="grab"></div>'+h;document.body.classList.add('so')}
+function closeSheet(){document.body.classList.remove('so')}
+$('#bd').onclick=closeSheet;
+let tmr;function toast(m){const t=$('#tt');t.textContent=m;t.classList.add('on');clearTimeout(tmr);tmr=setTimeout(()=>t.classList.remove('on'),2400)}
+const pick=e=>{[...e.parentNode.children].forEach(c=>c.classList.remove('on'));e.classList.add('on')};
+const val=id=>$(id).value.trim();
+const empty=(a,b)=>`<div class="empty"><b>${a}</b>${b}</div>`;
 
-function enterApp(){
-  document.getElementById('landing').style.display='none';
-  document.getElementById('app').style.display='block';
-  quickAddModal = new bootstrap.Modal(document.getElementById('quickAddModal'));
-  init();
-}
+/* ---------- views ---------- */
+function vHome(){const t=next(),td=active().filter(x=>x.due&&x.due<=ymd()),dn=S.tasks.filter(x=>x.done&&x.doneDay===ymd()).length,tot=td.length+dn,est=td.reduce((a,x)=>a+(+x.est||0),0),h=new Date().getHours(),n=S.prefs.name;
+ const g=(h<11?'Good morning':h<17?'Good afternoon':'Good evening')+(n?', '+esc(n):'')+'.';
+ const ev=S.events.filter(e=>e.date>=ymd()).sort(cE)[0];
+ return `<div class="top"><div class="muted">${new Date().toLocaleDateString(undefined,{weekday:'long',day:'numeric',month:'long'})}</div><div><button onclick="searchSheet()" aria-label="Search">${ic('search')}</button><button onclick="settings()" aria-label="Settings">${ic('gear')}</button></div></div>
+ <main><div class="lbl" style="margin-top:28px">${g}</div><div class="big" style="font-size:1rem;color:var(--mu);font-weight:400">What's next?</div>
+ ${t?`<div class="big" style="font-size:2.1rem;margin-top:10px" onclick="taskSheet('${t.id}')">${esc(t.title)}</div><div class="muted">${dueLbl(t.due)} · ${t.pri} priority</div>
+ <button class="btn btn-noto mt-4 w-100" onclick="focusSheet('${t.id}')">Start Focus</button>`:empty('Nothing planned yet.','Start with one small task.')+`<button class="btn btn-noto w-100" onclick="taskSheet()">Add a task</button>`}
+ <div class="sec"><div class="lbl">Today</div><div>${tot?`${tot} task${tot>1?'s':''}${est?' · '+dur(est)+' estimated':''}`:'No tasks due'}</div>${tot?`<div class="bar"><i style="width:${Math.round(dn/tot*100)}%"></i></div><div class="muted mt-1">${dn} of ${tot} done</div>`:''}</div>
+ ${ev?`<div class="sec"><div class="lbl">Upcoming</div><div>${esc(ev.title)}</div><div class="muted">${ev.date===ymd()?'Today':dueLbl(ev.date).replace('Due ','')}${ev.time?' · '+ev.time:''}</div></div>`:''}
+ <div class="ins"><div class="lbl">AI Insight</div><div>“${insight()}”</div></div>
+ <div class="row g-2"><div class="col-6"><button class="btn-soft w-100" onclick="taskSheet()">+ Add Task</button></div><div class="col-6"><button class="btn-soft w-100" onclick="noteSheet()">+ Add Note</button></div>
+ <div class="col-6"><button class="btn-soft w-100" onclick="focusSheet()">Start Focus</button></div><div class="col-6"><button class="btn-soft w-100" onclick="checkin()">Check In</button></div></div></main>`}
 
-function showView(name){
-  document.querySelectorAll('.view').forEach(v=>v.classList.remove('active'));
-  document.getElementById('view-'+name).classList.add('active');
-  document.querySelectorAll('.nav-item[data-view]').forEach(n=>n.classList.toggle('active',n.dataset.view===name));
-  if(name==='notes')renderNotes();
-  if(name==='profile')renderProfile();
-  if(name==='focus')fillFocusTaskSelect();
-}
+function taskRow(t){return `<div class="ri ${t.done?'done':''}" data-id="${t.id}"><input type="checkbox" class="cb" ${t.done?'checked':''} onchange="toggle('${t.id}')"><div class="g" onclick="taskSheet('${t.id}')"><div class="tt">${esc(t.title)}</div><div class="muted">${[dueLbl(t.due),t.pri,t.est?t.est+'m':'',esc(t.cat)].filter(Boolean).join(' · ')}</div></div>${t.pri==='High'&&!t.done?'<span class="hi"></span>':''}</div>`}
+const cE=(a,b)=>(a.date+(a.time||'')).localeCompare(b.date+(b.time||''));
+function vTasks(){const td=ymd();let l,h;
+ if(tt==='today')l=S.tasks.filter(t=>!t.done&&t.due&&t.due<=td).sort((a,b)=>score(b)-score(a));
+ else if(tt==='upcoming')l=S.tasks.filter(t=>!t.done&&(!t.due||t.due>td)).sort((a,b)=>(a.due||'9').localeCompare(b.due||'9'));
+ else if(tt==='done')l=S.tasks.filter(t=>t.done).sort((a,b)=>b.doneAt-a.doneAt);
+ if(tt==='schedule'){const ev=S.events.filter(e=>e.date>=td).sort(cE);h=ev.length?ev.map(e=>`<div class="ri" onclick="eventSheet('${e.id}')"><div class="g"><div class="tt">${esc(e.title)}</div><div class="muted">${e.date===td?'Today':e.date===addDays(1)?'Tomorrow':dueLbl(e.date).replace('Due ','')}${e.time?' · '+e.time:''}</div></div></div>`).join(''):empty('Nothing scheduled.','Add an event when you need one.')}
+ else h=l.length?l.map(taskRow).join(''):tt==='done'?empty('Nothing completed yet.','One task at a time.'):empty('Nothing planned yet.','Start with one small task.');
+ return `<div class="top"><div class="big" style="margin:0">Tasks</div><button onclick="searchSheet()">${ic('search')}</button></div><main><div class="tabs">${[['today','Today'],['upcoming','Upcoming'],['done','Completed'],['schedule','Schedule']].map(([k,v])=>`<button class="${tt===k?'on':''}" onclick="tt='${k}';render()">${v}</button>`).join('')}</div>${h}</main>`}
 
-/* ---------- greeting / date ---------- */
-function init(){
-  const h=new Date().getHours();
-  document.getElementById('greeting').textContent = h<12?"Good morning":h<18?"Good afternoon":"Good evening";
-  document.getElementById('todayDate').textContent = new Date().toLocaleDateString('en-US',{weekday:'long',month:'long',day:'numeric'});
-  buildMoodPicker();
-  renderDashboard();
-  renderTasks();
-  bumpStreak();
-}
+function setupHTML(id){const list=active().sort((a,b)=>score(b)-score(a)),cur=S.tasks.find(t=>t.id===id),m=cur&&+cur.est>0?cur.est:25;
+ return `<label class="muted">Task</label><select id="fsT" class="form-select mb-3"><option value="">No task · free focus</option>${list.map(t=>`<option value="${t.id}" ${t.id===id?'selected':''}>${esc(t.title)}</option>`).join('')}</select>
+ <label class="muted">Duration (minutes)</label><div class="d-flex gap-2 mb-3"><button class="ch" onclick="$('#fsM').value=25">25</button><button class="ch" onclick="$('#fsM').value=50">50</button><input id="fsM" type="number" min="1" max="240" class="form-control" value="${m}" placeholder="Custom"></div>
+ <button class="btn btn-noto w-100" onclick="beginFocus()">Start Focus</button>`}
+function focusSheet(id,rec){sheet(`<h5 class="fw-semibold">Ready to focus?</h5><p class="muted">${rec?'Task added. Start now while it is fresh.':'Choose a task and set your time.'}</p>${setupHTML(id)}<button class="btn w-100 mt-1 text-muted" onclick="closeSheet()">${rec?'Later':'Cancel'}</button>`)}
+function vFocus(){const s=sToday(),tot=s.reduce((a,x)=>a+x.min,0),t=next();
+ return `<div class="top"><div class="big" style="margin:0">Focus</div><span></span></div><main><div class="lbl mt-3">One task at a time.</div><div class="big mb-4">Ready to focus?</div>${setupHTML(t&&t.id)}
+ <div class="sec">${S.sessions.length?`<div class="kv"><span>Sessions today</span><span>${s.length}</span></div><div class="kv"><span>Focus time today</span><span>${dur(tot)}</span></div>`:empty('No focus sessions yet.','Start your first session.')}</div></main>`}
 
-function buildMoodPicker(){
-  const moods=[['😞','low'],['😐','okay'],['🙂','good'],['😄','great']];
-  const wrap=document.getElementById('moodPicker');
-  wrap.innerHTML='';
-  let selected='okay';
-  moods.forEach(([emoji,val])=>{
-    const b=document.createElement('button');
-    b.type='button';b.className='btn btn-ghost btn-sm';b.textContent=emoji;
-    b.onclick=()=>{selected=val;wrap.dataset.selected=val;[...wrap.children].forEach(c=>c.style.borderColor='var(--line)');b.style.borderColor='var(--accent)';};
-    wrap.appendChild(b);
-  });
-  wrap.dataset.selected='okay';
-}
+const nMatch=n=>{const q=($('#nq')?$('#nq').value:'').toLowerCase();return !q||(n.text+' '+n.tags.join(' ')).toLowerCase().includes(q)};
+function nList(){const l=S.notes.filter(nMatch).sort((a,b)=>(b.pin-a.pin)||b.ts-a.ts);
+ return l.length?l.map(n=>{const [f,...r]=n.text.split('\n');return `<div class="ri" onclick="noteSheet('${n.id}')"><div class="g"><div class="tt">${n.pin?'📌 ':''}${esc(f)}</div><div class="muted text-truncate">${esc(r.join(' ')||' ')}</div>${n.tags.length?`<div class="muted">${n.tags.map(t=>'#'+esc(t)).join(' ')}</div>`:''}</div></div>`}).join(''):empty('Your thoughts have a place.','Create your first note.')}
+function vNotes(){return `<div class="top"><div class="big" style="margin:0">Notes</div><span></span></div><main><input id="nq" class="form-control my-3" placeholder="Search notes" oninput="$('#nl').innerHTML=nList()"><div id="nl">${nList()}</div></main>`}
 
-function logState(){
-  const mood = document.getElementById('moodPicker').dataset.selected||'okay';
-  const energy = +document.getElementById('energyRange').value;
-  const stress = +document.getElementById('stressRange').value;
-  const today = new Date().toDateString();
-  states = states.filter(s=>s.date!==today);
-  states.push({date:today,mood,energy,stress});
-  save();
-  toast('Today\'s state saved');
-  renderDashboard();
-}
+function vIns(){const ss=S.sessions,tot=ss.reduce((a,x)=>a+x.min,0),dn=S.tasks.filter(t=>t.done),b=bestHour(),wd={},od={};
+ [...dn.map(t=>t.doneDay),...ss.map(x=>x.day)].forEach(d=>{const w=new Date(d+'T00:00').toLocaleDateString('en',{weekday:'long'});wd[w]=(wd[w]||0)+1});
+ active().filter(t=>t.due&&t.due<ymd()).forEach(t=>{const c=t.cat||'Uncategorized';od[c]=(od[c]||0)+1});
+ const top=o=>Object.entries(o).sort((a,c)=>c[1]-a[1])[0],td=top(wd),to=top(od),pts=dn.length*10+Math.round(tot/5);
+ const ach=[[dn.length>=1,'First task done'],[dn.length>=10,'10 tasks done'],[ss.length>=5,'5 focus sessions'],[streak()>=3,'3-day streak']].filter(a=>a[0]).map(a=>a[1]);
+ const kv=(a,b)=>`<div class="kv"><span>${a}</span><span>${b}</span></div>`;
+ return `<div class="top"><div class="big" style="margin:0">Insights</div><span></span></div><main>
+ ${kv('Total focus time',dur(tot))}${kv('Focus sessions',ss.length)}${kv('Tasks completed',dn.length)}${kv('Best focus window',b==null?'—':pad(b)+':00–'+pad(b+2)+':00')}${kv('Most productive day',td?td[0]:'—')}${kv('Often delayed',to?to[0]:'—')}
+ <div class="sec"><div class="lbl">Productivity pattern</div>${recs().map(r=>`<div class="ins" style="margin:10px 0">${r}</div>`).join('')}</div>
+ <div class="sec"><div class="lbl">Progress</div>${kv('Daily streak',streak()+' day'+(streak()==1?'':'s'))}${kv('Points',pts)}${ach.length?`<div class="muted mt-2">${ach.join(' · ')}</div>`:''}</div>
+ <button class="btn-soft w-100 mt-4" onclick="checkin()">Check In</button></main>`}
+
+function render(){const v={home:vHome,tasks:vTasks,focus:vFocus,notes:vNotes,insights:vIns}[tab];$('#app').innerHTML=v();
+ $('#nav').innerHTML=NAV.map(([k,l])=>`<button class="${tab===k?'on':''}" onclick="go('${k}')">${ic(k)}${l}</button>`).join('');
+ $('#fab').style.display=(tab==='focus'||tab==='insights')?'none':'';$('#fab').innerHTML=ic('plus')}
+function go(t){tab=t;render();scrollTo(0,0)}
+$('#fab').onclick=()=>tab==='notes'?noteSheet():tab==='tasks'&&tt==='schedule'?eventSheet():taskSheet();
 
 /* ---------- tasks ---------- */
-function openQuickAdd(){
-  document.getElementById('qaTitle').value='';
-  document.getElementById('qaDeadline').value='';
-  document.getElementById('qaCategory').value='';
-  document.getElementById('qaPriority').value='medium';
-  quickAddModal.show();
-}
-function addTask(){
-  const title=document.getElementById('qaTitle').value.trim();
-  if(!title){toast('Please enter a task title');return;}
-  tasks.push({
-    id:uid(),title,
-    deadline:document.getElementById('qaDeadline').value,
-    priority:document.getElementById('qaPriority').value,
-    category:document.getElementById('qaCategory').value.trim()||'General',
-    done:false, createdAt:Date.now()
-  });
-  save();
-  quickAddModal.hide();
-  toast('Task added');
-  renderDashboard();renderTasks();
-}
-function toggleTask(id){
-  const t=tasks.find(x=>x.id===id); if(!t)return;
-  t.done=!t.done;
-  if(t.done){stats.points+=10;save();toast('Nice work! +10 points');}
-  else{save();}
-  renderDashboard();renderTasks();
-}
-function deleteTask(id){
-  if(!confirm('Delete this task?'))return;
-  tasks=tasks.filter(t=>t.id!==id);save();renderDashboard();renderTasks();
-}
-function priorityChip(p){
-  const map={low:['Low','chip-low'],medium:['Medium','chip-med'],high:['High','chip-high']};
-  const [label,cls]=map[p]||map.medium;
-  return `<span class="chip ${cls}">${label}</span>`;
-}
-function taskRow(t){
-  return `<div class="task-row">
-    <div class="task-check ${t.done?'done':''}" onclick="toggleTask('${t.id}')">${t.done?'✓':''}</div>
-    <div class="flex-grow-1">
-      <div class="task-title ${t.done?'done':''}">${escapeHtml(t.title)}</div>
-      <div class="small text-muted2">${t.category}${t.deadline?' · due '+t.deadline:''}</div>
-    </div>
-    ${priorityChip(t.priority)}
-    <span role="button" class="text-muted2 ms-2" onclick="deleteTask('${t.id}')">✕</span>
-  </div>`;
-}
-function escapeHtml(s){const d=document.createElement('div');d.textContent=s;return d.innerHTML;}
+function taskSheet(id){const t=S.tasks.find(x=>x.id===id)||{due:ymd(),pri:'Medium'};manualPri=!!id;
+ sheet(`<h5 class="fw-semibold mb-3">${id?'Edit task':'New task'}</h5><input id="fT" class="form-control form-control-lg mb-3" placeholder="What needs doing?" value="${esc(t.title)}">
+ <div class="row g-2 mb-3"><div class="col-7"><label class="muted">Deadline</label><input id="fD" type="date" class="form-control" value="${t.due||''}" onchange="autoP()"></div><div class="col-5"><label class="muted">Estimate (min)</label><input id="fE" type="number" min="5" step="5" class="form-control" value="${t.est||''}" onchange="autoP()"></div></div>
+ <label class="muted">Priority <span id="ph"></span></label><div class="d-flex gap-2 mb-3" id="fP">${['High','Medium','Low'].map(p=>`<button class="ch flex-fill ${p==t.pri?'on':''}" data-v="${p}" onclick="pick(this);manualPri=true">${p}</button>`).join('')}</div>
+ <div class="form-check mb-3"><input id="fI" type="checkbox" class="form-check-input" ${t.imp?'checked':''} onchange="autoP()"><label class="form-check-label" for="fI">Important</label></div>
+ <input id="fC" class="form-control mb-2" placeholder="Category (Study, Work…)" value="${esc(t.cat)}"><textarea id="fN" rows="2" class="form-control mb-3" placeholder="Short note">${esc(t.note)}</textarea>
+ <button class="btn btn-noto w-100" onclick="saveTask('${id||''}')">${id?'Save':'Add task'}</button>${id?`<button class="btn w-100 mt-1 text-danger" onclick="delTask('${id}')">Delete</button>`:''}`);
+ if(!id)setTimeout(()=>{$('#fT').focus();autoP()},300)}
+function autoP(){if(manualPri)return;const p=suggest($('#fD').value,$('#fI').checked,+$('#fE').value);[...$('#fP').children].forEach(c=>c.classList.toggle('on',c.dataset.v===p));$('#ph').textContent='· suggested '+p}
+function saveTask(id){const title=val('#fT');if(!title)return toast('Add a title first.');
+ const d={title,due:$('#fD').value,est:+$('#fE').value||0,pri:$('#fP .on').dataset.v,imp:$('#fI').checked,cat:val('#fC'),note:val('#fN')};
+ let t=S.tasks.find(x=>x.id===id);if(t)Object.assign(t,d);else{t={id:uid(),created:Date.now(),done:false,...d};S.tasks.push(t)}
+ save();closeSheet();render();toast(id?'Saved.':'Task added.');if(!id)setTimeout(()=>focusSheet(t.id,true),350)}
+function delTask(id){if(!confirm('Delete this task?'))return;S.tasks=S.tasks.filter(t=>t.id!==id);save();closeSheet();render();toast('Deleted.')}
+function toggle(id){const t=S.tasks.find(x=>x.id===id);t.done=!t.done;t.doneAt=t.done?Date.now():0;t.doneDay=t.done?ymd():'';save();render();toast(t.done?"Done. You're making progress.":'Moved back to active.')}
+let sx=0;document.addEventListener('touchstart',e=>{sx=e.touches[0].clientX},{passive:true});
+document.addEventListener('touchend',e=>{const r=e.target.closest&&e.target.closest('.ri[data-id]');if(r&&e.changedTouches[0].clientX-sx>90)toggle(r.dataset.id)},{passive:true});
 
-function renderTasks(){
-  const list=document.getElementById('allTasksList');
-  const sorted=[...tasks].sort((a,b)=>(a.done-b.done)|| priorityRank(b.priority)-priorityRank(a.priority));
-  list.innerHTML = sorted.map(taskRow).join('');
-  document.getElementById('tasksEmpty').style.display = tasks.length?'none':'block';
-}
-function priorityRank(p){return p==='high'?3:p==='medium'?2:1;}
-
-function renderDashboard(){
-  const pending = tasks.filter(t=>!t.done);
-  const today = document.getElementById('todayTasksList');
-  today.innerHTML = pending.length? pending.slice(0,5).map(taskRow).join('') : '<div class="empty-state">No pending tasks. Enjoy the calm 🌿</div>';
-  const next = pending.sort((a,b)=>priorityRank(b.priority)-priorityRank(a.priority))[0];
-  document.getElementById('nextTaskBox').innerHTML = next
-    ? `Start with <strong>${escapeHtml(next.title)}</strong> — it's your highest priority right now.`
-    : 'No pending tasks — add one to get started.';
-  document.getElementById('dashInsight').textContent = generateInsight(pending.length);
-  document.getElementById('streakCount').textContent = stats.streak;
-  document.getElementById('pointsCount').textContent = stats.points;
-  document.getElementById('sessionCount').textContent = stats.sessions + ' focus sessions';
-}
-
-function generateInsight(pendingCount){
-  if(pendingCount===0) return "All caught up. A good moment to plan tomorrow.";
-  if(pendingCount>=6) return "You have a lot on your plate — try breaking your biggest task into two smaller ones.";
-  const recent = states.slice(-5);
-  const avgEnergy = recent.length? recent.reduce((s,x)=>s+x.energy,0)/recent.length : null;
-  if(avgEnergy && avgEnergy<2.5) return "Your energy's been lower lately — consider a lighter task to start.";
-  return `You have ${pendingCount} task${pendingCount>1?'s':''} today. Let's begin with the most important one.`;
-}
-
-function bumpStreak(){
-  const today=new Date().toDateString();
-  if(stats.lastActive===today)return;
-  const y=new Date();y.setDate(y.getDate()-1);
-  stats.streak = stats.lastActive===y.toDateString() ? stats.streak+1 : 1;
-  stats.lastActive=today; save();
-}
+/* ---------- events ---------- */
+function eventSheet(id){const e=S.events.find(x=>x.id===id)||{date:ymd(),time:''};
+ sheet(`<h5 class="fw-semibold mb-3">${id?'Edit event':'New event'}</h5><input id="eT" class="form-control form-control-lg mb-3" placeholder="Event" value="${esc(e.title)}"><div class="row g-2 mb-3"><div class="col-7"><input id="eD" type="date" class="form-control" value="${e.date}"></div><div class="col-5"><input id="eH" type="time" class="form-control" value="${e.time}"></div></div>
+ <button class="btn btn-noto w-100" onclick="saveEv('${id||''}')">Save</button>${id?`<button class="btn w-100 mt-1 text-danger" onclick="delEv('${id}')">Delete</button>`:''}`)}
+function saveEv(id){const title=val('#eT');if(!title||!$('#eD').value)return toast('Add a title and date.');const d={title,date:$('#eD').value,time:$('#eH').value};
+ const e=S.events.find(x=>x.id===id);if(e)Object.assign(e,d);else S.events.push({id:uid(),...d});save();closeSheet();render();toast('Saved.')}
+function delEv(id){if(!confirm('Delete this event?'))return;S.events=S.events.filter(e=>e.id!==id);save();closeSheet();render()}
 
 /* ---------- notes ---------- */
-function addNote(){
-  const text=document.getElementById('noteInput').value.trim();
-  if(!text){toast('Write something first');return;}
-  notes.unshift({id:uid(),text,tag:document.getElementById('noteTag').value.trim(),pinned:false,createdAt:Date.now()});
-  document.getElementById('noteInput').value='';document.getElementById('noteTag').value='';
-  save();toast('Note saved');renderNotes();
-}
-function togglePin(id){const n=notes.find(x=>x.id===id);n.pinned=!n.pinned;save();renderNotes();}
-function deleteNote(id){notes=notes.filter(n=>n.id!==id);save();renderNotes();}
-function renderNotes(){
-  const q=(document.getElementById('noteSearch').value||'').toLowerCase();
-  const filtered=notes.filter(n=>n.text.toLowerCase().includes(q)||n.tag.toLowerCase().includes(q))
-    .sort((a,b)=>b.pinned-a.pinned || b.createdAt-a.createdAt);
-  document.getElementById('notesList').innerHTML = filtered.map(n=>`
-    <div class="col-md-6">
-      <div class="card-noto p-3 h-100">
-        <div class="d-flex justify-content-between">
-          <span class="small text-muted2">${n.tag?'#'+escapeHtml(n.tag):''}</span>
-          <div>
-            <span role="button" onclick="togglePin('${n.id}')">${n.pinned?'📌':'📍'}</span>
-            <span role="button" class="text-muted2 ms-2" onclick="deleteNote('${n.id}')">✕</span>
-          </div>
-        </div>
-        <div class="mt-1">${escapeHtml(n.text)}</div>
-      </div>
-    </div>`).join('');
-  document.getElementById('notesEmpty').style.display = notes.length?'none':'block';
-}
+function noteSheet(id){const n=S.notes.find(x=>x.id===id)||{text:'',tags:[],pin:false};
+ sheet(`<h5 class="fw-semibold mb-3">${id?'Edit note':'New note'}</h5><textarea id="nT" rows="6" class="form-control mb-2" placeholder="Capture first, organize later.">${esc(n.text)}</textarea><input id="nG" class="form-control mb-2" placeholder="Tags (comma separated)" value="${esc(n.tags.join(', '))}">
+ <div class="form-check mb-3"><input id="nP" type="checkbox" class="form-check-input" ${n.pin?'checked':''}><label class="form-check-label" for="nP">Pin</label></div>
+ <button class="btn btn-noto w-100" onclick="saveNote('${id||''}')">Save</button>${id?`<button class="btn w-100 mt-1 text-danger" onclick="delNote('${id}')">Delete</button>`:''}`);if(!id)setTimeout(()=>$('#nT').focus(),300)}
+function saveNote(id){const text=val('#nT');if(!text)return toast('Write something first.');const tags=val('#nG').split(/[,\s]+/).map(t=>t.replace('#','')).filter(Boolean),d={text,tags,pin:$('#nP').checked};
+ const n=S.notes.find(x=>x.id===id);if(n)Object.assign(n,d);else S.notes.push({id:uid(),ts:Date.now(),...d});save();closeSheet();render();toast('Note saved.')}
+function delNote(id){if(!confirm('Delete this note?'))return;S.notes=S.notes.filter(n=>n.id!==id);save();closeSheet();render()}
 
-/* ---------- focus mode ---------- */
-let focusMinutes=25, breakMinutes=5, timerId=null, remaining=0, onBreak=false, paused=false, currentTaskId='';
-function fillFocusTaskSelect(){
-  const sel=document.getElementById('focusTaskSelect');
-  sel.innerHTML='<option value="">General focus session</option>'+
-    tasks.filter(t=>!t.done).map(t=>`<option value="${t.id}">${escapeHtml(t.title)}</option>`).join('');
-}
-function pickMode(min,btn){
-  focusMinutes=min; breakMinutes = min===25?5:min===50?10:3;
-  document.querySelectorAll('#modePicker button').forEach(b=>b.style.borderColor='var(--line)');
-  btn.style.borderColor='var(--accent)';
-}
-function startFocus(){
-  currentTaskId=document.getElementById('focusTaskSelect').value;
-  const t=tasks.find(x=>x.id===currentTaskId);
-  document.getElementById('focusTaskLabel').textContent = t?t.title:'General focus session';
-  onBreak=false;paused=false;remaining=focusMinutes*60;
-  document.getElementById('focusOverlay').style.display='flex';
-  document.getElementById('focusPhaseLabel').textContent='Focus';
-  tick();
-  timerId=setInterval(tick,1000);
-}
-function tick(){
-  if(paused)return;
-  const m=String(Math.floor(remaining/60)).padStart(2,'0');
-  const s=String(remaining%60).padStart(2,'0');
-  document.getElementById('timerDisplay').textContent=`${m}:${s}`;
-  if(remaining<=0){
-    if(!onBreak){
-      stats.sessions++; stats.points+=15; save();
-      onBreak=true; remaining=breakMinutes*60;
-      document.getElementById('focusPhaseLabel').textContent='Break';
-      toast('Focus session complete — take a break');
-    } else {
-      endFocus(); return;
-    }
-  }
-  remaining--;
-}
-function togglePause(){paused=!paused;document.getElementById('pauseBtn').textContent=paused?'Resume':'Pause';}
-function endFocus(){
-  clearInterval(timerId);
-  document.getElementById('focusOverlay').style.display='none';
-  renderDashboard();
-  toast(`Session ended · ${stats.sessions} sessions today`);
-}
+/* ---------- check-in ---------- */
+function checkin(){const row=(k,l)=>`<div class="lbl">${l}</div><div class="sc" data-k="${k}">${[1,2,3,4,5].map(i=>`<button class="ch ${i==3?'on':''}" data-v="${i}" onclick="pick(this)">${i}</button>`).join('')}</div>`;
+ sheet(`<h5 class="fw-semibold mb-1">Quick check-in</h5><p class="muted">1 is low, 5 is high.</p>${row('mood','Mood')}${row('energy','Energy')}${row('stress','Stress')}<button class="btn btn-noto w-100" onclick="saveCheck()">Save</button>`)}
+function saveCheck(){const c={day:ymd(),ts:Date.now()};document.querySelectorAll('.sc').forEach(s=>c[s.dataset.k]=+s.querySelector('.on').dataset.v);S.checkins.push(c);save();closeSheet();render();toast(insight())}
 
-/* ---------- profile ---------- */
-function renderProfile(){
-  if(states.length<2){
-    document.getElementById('patternInsight').textContent='Log your state daily to see a pattern here.';
-  } else {
-    const best = [...states].sort((a,b)=>b.energy-a.energy)[0];
-    document.getElementById('patternInsight').textContent =
-      `Your energy tends to be higher on days marked "${best.mood}" — try scheduling important tasks on similar days.`;
-  }
-  const ach=[];
-  if(stats.streak>=3) ach.push('🔥 3-day streak');
-  if(stats.sessions>=1) ach.push('🎯 First focus session');
-  if(tasks.filter(t=>t.done).length>=5) ach.push('✅ 5 tasks completed');
-  document.getElementById('achievementsList').innerHTML = ach.length? ach.join(' &nbsp;·&nbsp; ') : 'Complete tasks and focus sessions to unlock achievements.';
-}
+/* ---------- search / settings ---------- */
+function searchSheet(){sheet(`<input id="gq" class="form-control form-control-lg mb-2" placeholder="Search tasks, notes, schedule" oninput="gs()"><div id="gr"></div>`);setTimeout(()=>$('#gq').focus(),300)}
+function gs(){const q=val('#gq').toLowerCase();if(!q){$('#gr').innerHTML='';return}
+ const r=[...S.tasks.filter(t=>(t.title+t.note+t.cat).toLowerCase().includes(q)).map(t=>['Task',t.title,`taskSheet('${t.id}')`]),...S.notes.filter(n=>(n.text+n.tags).toLowerCase().includes(q)).map(n=>['Note',n.text.split('\n')[0],`noteSheet('${n.id}')`]),...S.events.filter(e=>e.title.toLowerCase().includes(q)).map(e=>['Schedule',e.title,`eventSheet('${e.id}')`])];
+ $('#gr').innerHTML=r.length?r.map(x=>`<div class="ri" onclick="${x[2]}"><div class="g"><div class="tt">${esc(x[1])}</div><div class="muted">${x[0]}</div></div></div>`).join(''):'<div class="empty">No results.</div>'}
+function settings(){sheet(`<h5 class="fw-semibold mb-3">Settings</h5><label class="muted">Your name</label><input id="sN" class="form-control mb-3" value="${esc(S.prefs.name)}">
+ <button class="btn-soft w-100 mb-2" onclick="askNotif()">Enable reminders</button><button class="btn btn-noto w-100" onclick="S.prefs.name=val('#sN');save();closeSheet();render()">Save</button>
+ <button class="btn w-100 mt-2 text-danger" onclick="if(confirm('Erase all NOTO data on this device?')){localStorage.clear();location.reload()}">Erase all data</button><div class="muted text-center mt-2">NOTO · Get Things Done · data stays on this device</div>`)}
+function askNotif(){if(!('Notification' in window))return toast('Notifications are not supported here.');Notification.requestPermission().then(p=>toast(p==='granted'?'Reminders enabled.':'Reminders are off.'))}
+function notify(t,b){if(!('Notification' in window)||Notification.permission!=='granted')return;navigator.serviceWorker&&navigator.serviceWorker.ready.then(r=>r.showNotification(t,{body:b,icon:'icon.svg',tag:'noto'})).catch(()=>{})}
 
-function resetData(){
-  if(!confirm('This will erase all your NOTO data. Continue?'))return;
-  localStorage.removeItem('noto_tasks');localStorage.removeItem('noto_notes');
-  localStorage.removeItem('noto_states');localStorage.removeItem('noto_stats');
-  location.reload();
-}
-</script>
-</body>
-</html>
+/* ---------- focus timer (timestamp based: stays accurate in background) ---------- */
+function beginFocus(){const m=Math.min(240,Math.max(1,+$('#fsM').value||25));F={taskId:$('#fsT').value,plan:m*60000,endAt:Date.now()+m*60000,rem:m*60000,state:'run',startTs:Date.now()};saveF();closeSheet();
+ if('Notification' in window&&Notification.permission==='default')Notification.requestPermission();foRender()}
+function foRender(){const o=$('#fo');clearInterval(iv);if(!F){o.classList.remove('on');return}o.classList.add('on');const t=S.tasks.find(x=>x.id===F.taskId);
+ o.innerHTML=`<div><div class="m2">${F.state==='run'?'Focusing on':'Paused'}</div><h2 class="fw-semibold mt-1">${esc(t?t.title:'Free focus')}</h2><div id="clk" class="clk"></div><div id="elp" class="m2"></div>
+ <div class="fob">${F.state==='run'?'<button class="btn btn-light" onclick="pauseF()">Pause</button>':'<button class="btn btn-light" onclick="resumeF()">Resume</button>'}<button class="btn btn-outline-light" onclick="finishF(false)">End</button></div></div>`;iv=setInterval(tick,250);tick()}
+function tick(){if(!F)return;if(F.state==='run')F.rem=F.endAt-Date.now();if(F.rem<=0){finishF(true);return}const s=Math.ceil(F.rem/1000);
+ $('#clk')&&($('#clk').textContent=pad(Math.floor(s/60))+':'+pad(s%60));$('#elp')&&($('#elp').textContent=`${dur(F.plan/60000)} session · ${dur((F.plan-F.rem)/60000)} done`)}
+function pauseF(){F.rem=F.endAt-Date.now();F.state='pause';saveF();foRender()}
+function resumeF(){F.endAt=Date.now()+F.rem;F.state='run';saveF();foRender()}
+function finishF(full){const f=F;if(!f)return;const el=(f.plan-Math.max(0,f.state==='run'?f.endAt-Date.now():f.rem))/60000,min=full?f.plan/60000:Math.round(el*10)/10;
+ F=null;saveF();foRender();if(min>=0.5)S.sessions.push({id:uid(),taskId:f.taskId,day:ymd(),hr:new Date(f.startTs).getHours(),min,plan:f.plan/60000});save();
+ if(full){notify('Session complete','Well done. Take a break.');navigator.vibrate&&navigator.vibrate([200,100,200])}
+ const s=sToday(),tot=s.reduce((a,x)=>a+x.min,0),t=S.tasks.find(x=>x.id===f.taskId);render();
+ sheet(`<div class="text-center py-2"><div style="font-size:2.4rem">🎉</div><h4 class="fw-semibold mt-2">${full?'Congratulations!':'Nice effort.'}</h4><p class="muted mb-4">${full?'You did great work today. Every session counts.':'Every minute counts. You’re making progress.'}</p></div>
+ <div class="kv"><span>This session</span><span>${dur(min)}</span></div><div class="kv"><span>Sessions today</span><span>${s.length}</span></div><div class="kv"><span>Focus time today</span><span>${dur(tot)}</span></div>
+ ${t&&!t.done?`<button class="btn btn-noto w-100 mt-4" onclick="toggle('${t.id}');closeSheet()">Mark “${esc(t.title.slice(0,28))}” complete</button><button class="btn w-100 mt-1" onclick="closeSheet()">Not yet · take a break</button>`:`<button class="btn btn-noto w-100 mt-4" onclick="closeSheet()">Take a break</button>`}`)}
+document.addEventListener('visibilitychange',()=>{if(!document.hidden)tick()});
+
+/* ---------- init ---------- */
+render();if(F)foRender();
+if(active().filter(t=>t.due&&t.due<=ymd()).length>4&&S.prefs.nudge!==ymd()){S.prefs.nudge=ymd();save();setTimeout(()=>toast('You have several tasks today. Start with one small task.'),600)}
+if('serviceWorker' in navigator)addEventListener('load',()=>navigator.serviceWorker.register('sw.js').catch(()=>{}));
+</script></body></html>
