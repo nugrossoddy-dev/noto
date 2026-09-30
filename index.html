@@ -63,9 +63,10 @@ main{padding:8px 22px 20px}
 <nav class="bn" id="nav"></nav>
 <div id="bd"></div><div id="sh"></div><div id="tt"></div><div id="fo"></div>
 <script>
-const K='noto_v1',FK='noto_focus_v1';
-let S=JSON.parse(localStorage.getItem(K)||'null')||{tasks:[],events:[],notes:[],sessions:[],checkins:[],prefs:{name:''}};
-let F=JSON.parse(localStorage.getItem(FK)||'null'),tab='home',tt='today',manualPri=false,iv;
+const AK='noto_accounts',SK='noto_session',blank=()=>({tasks:[],events:[],notes:[],sessions:[],checkins:[],prefs:{name:''}});
+let K,FK,S=blank(),F=null,U=null,tab='home',tt='today',manualPri=false,iv,authMode='login';
+const accts=()=>JSON.parse(localStorage.getItem(AK)||'[]');
+function loadUser(u){U=u;K='noto_v1_'+u.id;FK='noto_focus_v1_'+u.id;S=JSON.parse(localStorage.getItem(K)||'null')||blank();F=JSON.parse(localStorage.getItem(FK)||'null');tab='home';tt='today'}
 const save=()=>localStorage.setItem(K,JSON.stringify(S)),saveF=()=>F?localStorage.setItem(FK,JSON.stringify(F)):localStorage.removeItem(FK);
 const $=s=>document.querySelector(s),uid=()=>Math.random().toString(36).slice(2,9),pad=n=>String(n).padStart(2,'0');
 const ymd=d=>{d=d||new Date();return d.getFullYear()+'-'+pad(d.getMonth()+1)+'-'+pad(d.getDate())};
@@ -122,7 +123,7 @@ function vHome(){const t=next(),td=active().filter(x=>x.due&&x.due<=ymd()),dn=S.
  <div class="row g-2"><div class="col-6"><button class="btn-soft w-100" onclick="taskSheet()">+ Add Task</button></div><div class="col-6"><button class="btn-soft w-100" onclick="noteSheet()">+ Add Note</button></div>
  <div class="col-6"><button class="btn-soft w-100" onclick="focusSheet()">Start Focus</button></div><div class="col-6"><button class="btn-soft w-100" onclick="checkin()">Check In</button></div></div></main>`}
 
-function taskRow(t){return `<div class="ri ${t.done?'done':''}" data-id="${t.id}"><input type="checkbox" class="cb" ${t.done?'checked':''} onchange="toggle('${t.id}')"><div class="g" onclick="taskSheet('${t.id}')"><div class="tt">${esc(t.title)}</div><div class="muted">${[dueLbl(t.due),t.pri,t.est?t.est+'m':'',esc(t.cat)].filter(Boolean).join(' · ')}</div></div>${t.pri==='High'&&!t.done?'<span class="hi"></span>':''}</div>`}
+function taskRow(t){return `<div class="ri ${t.done?'done':''}" data-id="${t.id}"><input type="checkbox" class="cb" ${t.done?'checked':''} onchange="toggle('${t.id}')"><div class="g" onclick="taskSheet('${t.id}')"><div class="tt">${esc(t.title)}</div><div class="muted">${[dueLbl(t.due),t.pri,t.est?t.est+'m':'',t.rep&&t.rep!=='none'?'↻ '+t.rep:'',esc(t.cat)].filter(Boolean).join(' · ')}</div></div>${t.pri==='High'&&!t.done?'<span class="hi"></span>':''}</div>`}
 const cE=(a,b)=>(a.date+(a.time||'')).localeCompare(b.date+(b.time||''));
 function vTasks(){const td=ymd();let l,h;
  if(tt==='today')l=S.tasks.filter(t=>!t.done&&t.due&&t.due<=td).sort((a,b)=>score(b)-score(a));
@@ -158,9 +159,9 @@ function vIns(){const ss=S.sessions,tot=ss.reduce((a,x)=>a+x.min,0),dn=S.tasks.f
  <div class="sec"><div class="lbl">Progress</div>${kv('Daily streak',streak()+' day'+(streak()==1?'':'s'))}${kv('Points',pts)}${ach.length?`<div class="muted mt-2">${ach.join(' · ')}</div>`:''}</div>
  <button class="btn-soft w-100 mt-4" onclick="checkin()">Check In</button></main>`}
 
-function render(){const v={home:vHome,tasks:vTasks,focus:vFocus,notes:vNotes,insights:vIns}[tab];$('#app').innerHTML=v();
+function render(){if(!U)return authView();const v={home:vHome,tasks:vTasks,focus:vFocus,notes:vNotes,insights:vIns}[tab];$('#app').innerHTML=v();
  $('#nav').innerHTML=NAV.map(([k,l])=>`<button class="${tab===k?'on':''}" onclick="go('${k}')">${ic(k)}${l}</button>`).join('');
- $('#fab').style.display=(tab==='focus'||tab==='insights')?'none':'';$('#fab').innerHTML=ic('plus')}
+ $('#nav').style.display='';$('#fab').style.display=(tab==='focus'||tab==='insights')?'none':'';$('#fab').innerHTML=ic('plus')}
 function go(t){tab=t;render();scrollTo(0,0)}
 $('#fab').onclick=()=>tab==='notes'?noteSheet():tab==='tasks'&&tt==='schedule'?eventSheet():taskSheet();
 
@@ -168,18 +169,22 @@ $('#fab').onclick=()=>tab==='notes'?noteSheet():tab==='tasks'&&tt==='schedule'?e
 function taskSheet(id){const t=S.tasks.find(x=>x.id===id)||{due:ymd(),pri:'Medium'};manualPri=!!id;
  sheet(`<h5 class="fw-semibold mb-3">${id?'Edit task':'New task'}</h5><input id="fT" class="form-control form-control-lg mb-3" placeholder="What needs doing?" value="${esc(t.title)}">
  <div class="row g-2 mb-3"><div class="col-7"><label class="muted">Deadline</label><input id="fD" type="date" class="form-control" value="${t.due||''}" onchange="autoP()"></div><div class="col-5"><label class="muted">Estimate (min)</label><input id="fE" type="number" min="5" step="5" class="form-control" value="${t.est||''}" onchange="autoP()"></div></div>
- <label class="muted">Priority <span id="ph"></span></label><div class="d-flex gap-2 mb-3" id="fP">${['High','Medium','Low'].map(p=>`<button class="ch flex-fill ${p==t.pri?'on':''}" data-v="${p}" onclick="pick(this);manualPri=true">${p}</button>`).join('')}</div>
+ <label class="muted">Repeat</label><select id="fR" class="form-select mb-3">${[['none','Does not repeat'],['daily','Every day'],['weekdays','Weekdays'],['weekly','Every week'],['monthly','Every month']].map(([v,l])=>`<option value="${v}" ${(t.rep||'none')===v?'selected':''}>${l}</option>`).join('')}</select><label class="muted">Priority <span id="ph"></span></label><div class="d-flex gap-2 mb-3" id="fP">${['High','Medium','Low'].map(p=>`<button class="ch flex-fill ${p==t.pri?'on':''}" data-v="${p}" onclick="pick(this);manualPri=true">${p}</button>`).join('')}</div>
  <div class="form-check mb-3"><input id="fI" type="checkbox" class="form-check-input" ${t.imp?'checked':''} onchange="autoP()"><label class="form-check-label" for="fI">Important</label></div>
  <input id="fC" class="form-control mb-2" placeholder="Category (Study, Work…)" value="${esc(t.cat)}"><textarea id="fN" rows="2" class="form-control mb-3" placeholder="Short note">${esc(t.note)}</textarea>
- <button class="btn btn-noto w-100" onclick="saveTask('${id||''}')">${id?'Save':'Add task'}</button>${id?`<button class="btn w-100 mt-1 text-danger" onclick="delTask('${id}')">Delete</button>`:''}`);
+ <button class="btn btn-noto w-100" onclick="saveTask('${id||''}')">${id?'Save':'Add task'}</button>${id?'':`<button class="btn w-100 mt-1" onclick="saveTask('',1)">Save &amp; add another</button>`}${id?`<button class="btn w-100 mt-1 text-danger" onclick="delTask('${id}')">Delete</button>`:''}`);
  if(!id)setTimeout(()=>{$('#fT').focus();autoP()},300)}
 function autoP(){if(manualPri)return;const p=suggest($('#fD').value,$('#fI').checked,+$('#fE').value);[...$('#fP').children].forEach(c=>c.classList.toggle('on',c.dataset.v===p));$('#ph').textContent='· suggested '+p}
-function saveTask(id){const title=val('#fT');if(!title)return toast('Add a title first.');
- const d={title,due:$('#fD').value,est:+$('#fE').value||0,pri:$('#fP .on').dataset.v,imp:$('#fI').checked,cat:val('#fC'),note:val('#fN')};
+function saveTask(id,more){const title=val('#fT');if(!title)return toast('Add a title first.');
+ const d={title,due:$('#fD').value,est:+$('#fE').value||0,pri:$('#fP .on').dataset.v,imp:$('#fI').checked,cat:val('#fC'),note:val('#fN'),rep:$('#fR').value};
  let t=S.tasks.find(x=>x.id===id);if(t)Object.assign(t,d);else{t={id:uid(),created:Date.now(),done:false,...d};S.tasks.push(t)}
- save();closeSheet();render();toast(id?'Saved.':'Task added.');if(!id)setTimeout(()=>focusSheet(t.id,true),350)}
+ save();render();toast(id?'Saved.':'Task added.');if(more)return taskSheet();closeSheet();if(!id)setTimeout(()=>focusSheet(t.id,true),350)}
 function delTask(id){if(!confirm('Delete this task?'))return;S.tasks=S.tasks.filter(t=>t.id!==id);save();closeSheet();render();toast('Deleted.')}
-function toggle(id){const t=S.tasks.find(x=>x.id===id);t.done=!t.done;t.doneAt=t.done?Date.now():0;t.doneDay=t.done?ymd():'';save();render();toast(t.done?"Done. You're making progress.":'Moved back to active.')}
+function nextDue(rep,base){const d=new Date((base||ymd())+'T00:00');const st=()=>{if(rep==='daily')d.setDate(d.getDate()+1);else if(rep==='weekly')d.setDate(d.getDate()+7);else if(rep==='monthly'){const day=d.getDate();d.setDate(1);d.setMonth(d.getMonth()+1);d.setDate(Math.min(day,new Date(d.getFullYear(),d.getMonth()+1,0).getDate()))}else{do d.setDate(d.getDate()+1);while(d.getDay()%6===0)}};do st();while(ymd(d)<=ymd());return ymd(d)}
+function toggle(id){const t=S.tasks.find(x=>x.id===id);t.done=!t.done;t.doneAt=t.done?Date.now():0;t.doneDay=t.done?ymd():'';let extra='';
+ if(t.done&&t.rep&&t.rep!=='none'&&!t.spawned){const n={...t,id:uid(),done:false,doneAt:0,doneDay:'',spawned:'',created:Date.now(),due:nextDue(t.rep,t.due)};t.spawned=n.id;S.tasks.push(n);extra=' Next one: '+dueLbl(n.due).replace('Due ','')+'.'}
+ else if(!t.done&&t.spawned){const n=S.tasks.find(x=>x.id===t.spawned);if(n&&!n.done)S.tasks=S.tasks.filter(x=>x!==n);t.spawned=''}
+ save();render();toast(t.done?"Done. You're making progress."+extra:'Moved back to active.')}
 let sx=0;document.addEventListener('touchstart',e=>{sx=e.touches[0].clientX},{passive:true});
 document.addEventListener('touchend',e=>{const r=e.target.closest&&e.target.closest('.ri[data-id]');if(r&&e.changedTouches[0].clientX-sx>90)toggle(r.dataset.id)},{passive:true});
 
@@ -210,9 +215,9 @@ function searchSheet(){sheet(`<input id="gq" class="form-control form-control-lg
 function gs(){const q=val('#gq').toLowerCase();if(!q){$('#gr').innerHTML='';return}
  const r=[...S.tasks.filter(t=>(t.title+t.note+t.cat).toLowerCase().includes(q)).map(t=>['Task',t.title,`taskSheet('${t.id}')`]),...S.notes.filter(n=>(n.text+n.tags).toLowerCase().includes(q)).map(n=>['Note',n.text.split('\n')[0],`noteSheet('${n.id}')`]),...S.events.filter(e=>e.title.toLowerCase().includes(q)).map(e=>['Schedule',e.title,`eventSheet('${e.id}')`])];
  $('#gr').innerHTML=r.length?r.map(x=>`<div class="ri" onclick="${x[2]}"><div class="g"><div class="tt">${esc(x[1])}</div><div class="muted">${x[0]}</div></div></div>`).join(''):'<div class="empty">No results.</div>'}
-function settings(){sheet(`<h5 class="fw-semibold mb-3">Settings</h5><label class="muted">Your name</label><input id="sN" class="form-control mb-3" value="${esc(S.prefs.name)}">
+function settings(){sheet(`<h5 class="fw-semibold mb-1">Settings</h5><div class="muted mb-3">Signed in as ${esc(U.name)}</div><label class="muted">Your name</label><input id="sN" class="form-control mb-3" value="${esc(S.prefs.name)}">
  <button class="btn-soft w-100 mb-2" onclick="askNotif()">Enable reminders</button><button class="btn btn-noto w-100" onclick="S.prefs.name=val('#sN');save();closeSheet();render()">Save</button>
- <button class="btn w-100 mt-2 text-danger" onclick="if(confirm('Erase all NOTO data on this device?')){localStorage.clear();location.reload()}">Erase all data</button><div class="muted text-center mt-2">NOTO · Get Things Done · data stays on this device</div>`)}
+ <button class="btn-soft w-100 mt-2" onclick="logout()">Log out</button><button class="btn w-100 mt-1 text-danger" onclick="eraseMe()">Erase my data</button><div class="muted text-center mt-2">NOTO · Get Things Done · data stays on this device</div>`)}
 function askNotif(){if(!('Notification' in window))return toast('Notifications are not supported here.');Notification.requestPermission().then(p=>toast(p==='granted'?'Reminders enabled.':'Reminders are off.'))}
 function notify(t,b){if(!('Notification' in window)||Notification.permission!=='granted')return;navigator.serviceWorker&&navigator.serviceWorker.ready.then(r=>r.showNotification(t,{body:b,icon:'icon.svg',tag:'noto'})).catch(()=>{})}
 
@@ -235,8 +240,31 @@ function finishF(full){const f=F;if(!f)return;const el=(f.plan-Math.max(0,f.stat
  ${t&&!t.done?`<button class="btn btn-noto w-100 mt-4" onclick="toggle('${t.id}');closeSheet()">Mark “${esc(t.title.slice(0,28))}” complete</button><button class="btn w-100 mt-1" onclick="closeSheet()">Not yet · take a break</button>`:`<button class="btn btn-noto w-100 mt-4" onclick="closeSheet()">Take a break</button>`}`)}
 document.addEventListener('visibilitychange',()=>{if(!document.hidden)tick()});
 
+/* ---------- accounts (local, on-device) ---------- */
+async function hsh(p,s){const d=s+p;if(crypto.subtle){const b=await crypto.subtle.digest('SHA-256',new TextEncoder().encode(d));return [...new Uint8Array(b)].map(x=>x.toString(16).padStart(2,'0')).join('')}let h=5381;for(const c of d)h=(h*33^c.charCodeAt(0))>>>0;return 'x'+h}
+const aerr=m=>{$('#aE').textContent=m};
+function authView(){$('#nav').style.display=$('#fab').style.display='none';const reg=authMode==='register'||!accts().length;
+ $('#app').innerHTML=`<main style="padding-top:12vh"><div class="big" style="font-size:2.4rem">noto</div><div class="muted mb-5">Get Things Done</div>
+ <div class="tabs">${accts().length?`<button class="${reg?'':'on'}" onclick="authMode='login';render()">Log in</button>`:''}<button class="${reg?'on':''}" onclick="authMode='register';render()">Create account</button></div>
+ <input id="aU" class="form-control form-control-lg mt-3 mb-2" placeholder="Username" autocapitalize="none" autocomplete="username">
+ <input id="aP" type="password" class="form-control form-control-lg mb-2" placeholder="Password${reg?' (min. 6 characters)':''}" autocomplete="${reg?'new-password':'current-password'}">
+ ${reg?'<input id="aP2" type="password" class="form-control form-control-lg mb-2" placeholder="Repeat password" autocomplete="new-password">':''}
+ <div id="aE" class="text-danger small mb-2" style="min-height:1.3em"></div>
+ <button class="btn btn-noto w-100" onclick="${reg?'doReg()':'doLogin()'}">${reg?'Create account':'Log in'}</button>
+ <div class="muted mt-4 text-center">Your account and data stay on this device and work offline.</div></main>`}
+async function doReg(){const n=val('#aU'),p=$('#aP').value;if(n.length<3)return aerr('Username needs at least 3 characters.');if(p.length<6)return aerr('Password needs at least 6 characters.');if(p!==$('#aP2').value)return aerr('Passwords do not match.');
+ const l=accts();if(l.some(a=>a.name.toLowerCase()===n.toLowerCase()))return aerr('That username is taken.');
+ const salt=uid()+uid(),u={id:uid()+uid(),name:n,salt,hash:await hsh(p,salt)};l.push(u);localStorage.setItem(AK,JSON.stringify(l));
+ const old=localStorage.getItem('noto_v1');if(old&&l.length===1){localStorage.setItem('noto_v1_'+u.id,old);localStorage.removeItem('noto_v1');const of=localStorage.getItem('noto_focus_v1');if(of){localStorage.setItem('noto_focus_v1_'+u.id,of);localStorage.removeItem('noto_focus_v1')}}
+ enter(u,true)}
+async function doLogin(){const n=val('#aU').toLowerCase(),u=accts().find(a=>a.name.toLowerCase()===n);if(!u||await hsh($('#aP').value,u.salt)!==u.hash)return aerr('Wrong username or password.');enter(u)}
+function enter(u,isNew){localStorage.setItem(SK,u.id);loadUser(u);if(isNew&&!S.prefs.name){S.prefs.name=u.name;save()}start()}
+function logout(){localStorage.removeItem(SK);U=null;F=null;foRender();closeSheet();authMode='login';render()}
+function eraseMe(){if(!confirm('Erase all data for this account? This cannot be undone.'))return;localStorage.removeItem(K);localStorage.removeItem(FK);S=blank();S.prefs.name=U.name;F=null;foRender();closeSheet();save();start()}
+document.addEventListener('keydown',e=>{if(e.key==='Enter'&&!U){const b=document.querySelector('.btn-noto');b&&b.click()}});
+
 /* ---------- init ---------- */
-render();if(F)foRender();
-if(active().filter(t=>t.due&&t.due<=ymd()).length>4&&S.prefs.nudge!==ymd()){S.prefs.nudge=ymd();save();setTimeout(()=>toast('You have several tasks today. Start with one small task.'),600)}
+function start(){render();if(F)foRender();if(active().filter(t=>t.due&&t.due<=ymd()).length>4&&S.prefs.nudge!==ymd()){S.prefs.nudge=ymd();save();setTimeout(()=>toast('You have several tasks today. Start with one small task.'),600)}}
+{const u=accts().find(a=>a.id===localStorage.getItem(SK));if(u)loadUser(u);start()}
 if('serviceWorker' in navigator)addEventListener('load',()=>navigator.serviceWorker.register('sw.js').catch(()=>{}));
 </script></body></html>
